@@ -1,0 +1,125 @@
+version: '3.8'
+
+services:
+  mongo:
+    image: mongo:6-jammy
+    container_name: intelli-credit-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - intelli_network
+    restart: unless-stopped
+    healthcheck:
+      test: echo "db.runCommand('ping').ok" | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: ./backend
+    container_name: intelli-credit-backend
+    ports:
+      - "5000:5000"
+    volumes:
+      - backend_uploads:/usr/src/app/uploads
+      - ./backend:/usr/src/app
+      - /usr/src/app/node_modules
+    env_file:
+      - ./backend/.env
+    networks:
+      - intelli_network
+    depends_on:
+      mongo:
+        condition: service_healthy
+      extraction-service:
+        condition: service_started
+      research-agent:
+        condition: service_started
+      risk-engine:
+        condition: service_started
+      cam-generator:
+        condition: service_started
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    container_name: intelli-credit-frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/usr/src/app
+      - /usr/src/app/node_modules
+    environment:
+      - VITE_API_BASE_URL=http://localhost:5000
+    networks:
+      - intelli_network
+    depends_on:
+      - backend
+    restart: unless-stopped
+    command: npm run dev -- --host
+
+  extraction-service:
+    build: ./ai-services/extraction-service
+    container_name: intelli-credit-extraction
+    ports:
+      - "8000:8000"
+    networks:
+      - intelli_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  research-agent:
+    build: ./ai-services/research-agent
+    container_name: intelli-credit-research
+    ports:
+      - "8001:8001"
+    networks:
+      - intelli_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  risk-engine:
+    build: ./ai-services/risk-engine
+    container_name: intelli-credit-risk
+    ports:
+      - "8002:8002"
+    networks:
+      - intelli_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8002/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  cam-generator:
+    build: ./ai-services/cam-generator
+    container_name: intelli-credit-cam
+    ports:
+      - "8003:8003"
+    networks:
+      - intelli_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8003/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  intelli_network:
+    driver: bridge
+
+volumes:
+  mongo_data:
+  backend_uploads:

@@ -1,0 +1,36 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"type": "object",
+	"properties": {
+		"final_score": {
+			"type": "number"
+		},
+		"breakdown": {
+			"type": "object",
+			"properties": {
+				"financial_score": {
+					"type": "number"
+				},
+				"litigation_score": {
+					"type": "number"
+				},
+				"sector_score": {
+					"type": "number"
+				}
+			}
+		},
+		"decision": {
+			"type": "string"
+		},
+		"recommended_limit": {
+			"type": "number"
+		},
+		"interest_rate": {
+			"type": "number"
+		}
+	},
+	"required": [
+		"final_score",
+		"decision"
+	]
+}
