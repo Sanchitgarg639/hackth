@@ -1,25 +1,70 @@
 import axios from 'axios';
 
 const api = axios.create({
-	baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'
+	baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000',
+	timeout: 30000,
 });
 
-export const uploadFile = (file, companyName, sector) => {
+// ── Upload ──────────────────────────────────────────
+export const uploadFile = (files, companyName, sector, gstin, pan) => {
 	const formData = new FormData();
-	formData.append('file', file);
+	files.forEach(f => formData.append('files', f));
 	formData.append('companyName', companyName);
 	formData.append('sector', sector);
-	return api.post('/upload', formData);
+	if (gstin) formData.append('gstin', gstin);
+	if (pan) formData.append('pan', pan);
+	return api.post('/api/v1/upload', formData);
 };
 
-export const analyzeCompany = (companyId, note) => {
-	return api.post(`/analyze/${companyId}`, { note });
+export const getUploadById = (fileId) => {
+	return api.get(`/api/v1/upload/${fileId}`);
 };
 
+// ── Analysis ────────────────────────────────────────
+export const startAnalysis = (fileId, companyId) => {
+	return api.post('/api/v1/analyze', { fileId, companyId });
+};
+
+export const getAnalysisResult = (analysisId) => {
+	return api.get(`/api/v1/analyze/${analysisId}`);
+};
+
+// ── Risk ────────────────────────────────────────────
 export const getRiskScore = (companyId) => {
-	return api.get(`/risk/${companyId}`);
+	return api.get(`/api/v1/risk/${companyId}`);
+};
+export const computeRiskScore = (companyId, manualInputs = {}) => {
+	return api.post('/api/v1/risk/score', { companyId, manualInputs });
 };
 
-export const downloadCAM = (companyId) => {
-	return api.get(`/cam/${companyId}`, { responseType: 'blob' });
+// ── Report ──────────────────────────────────────────
+export const getReport = (analysisId) => {
+	return api.get(`/api/v1/report/${analysisId}`);
 };
+export const generateReport = (analysisId) => {
+	return api.post('/api/v1/report/generate', { analysisId });
+};
+
+// ── System Health ───────────────────────────────────
+export const getSystemHealth = () => {
+	return api.get('/system/health');
+};
+// ── Research ─────────────────────────────────────────
+export const startResearch = (companyId) => {
+	return api.post('/api/v1/research', { companyId });
+};
+
+export const getResearchFindings = (companyId) => {
+	return api.get(`/api/v1/research/${companyId}`);
+};
+
+// ── Qualitative ──────────────────────────────────────
+export const storeQualitativeInput = (companyId, data) => {
+	return api.post('/api/v1/qualitative', { companyId, ...data });
+};
+
+export const getQualitativeInput = (companyId) => {
+	return api.get(`/api/v1/qualitative/${companyId}`);
+};
+
+export default api;

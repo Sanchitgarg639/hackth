@@ -24,6 +24,7 @@ services:
       - "5000:5000"
     volumes:
       - backend_uploads:/usr/src/app/uploads
+      - cam_output:/usr/src/app/static/reports
       - ./backend:/usr/src/app
       - /usr/src/app/node_modules
     env_file:
@@ -42,6 +43,11 @@ services:
       cam-generator:
         condition: service_started
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:5000/health', r => { r.statusCode === 200 ? process.exit(0) : process.exit(1) }).on('error', () => process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
 
   frontend:
     build: ./frontend
@@ -64,12 +70,12 @@ services:
     build: ./ai-services/extraction-service
     container_name: intelli-credit-extraction
     ports:
-      - "8000:8000"
+      - "8001:8001"
     networks:
       - intelli_network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8001/health')"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -78,12 +84,12 @@ services:
     build: ./ai-services/research-agent
     container_name: intelli-credit-research
     ports:
-      - "8001:8001"
+      - "8002:8002"
     networks:
       - intelli_network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8002/health')"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -92,12 +98,12 @@ services:
     build: ./ai-services/risk-engine
     container_name: intelli-credit-risk
     ports:
-      - "8002:8002"
+      - "8003:8003"
     networks:
       - intelli_network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8002/health"]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8003/health')"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -106,12 +112,14 @@ services:
     build: ./ai-services/cam-generator
     container_name: intelli-credit-cam
     ports:
-      - "8003:8003"
+      - "8004:8004"
+    volumes:
+      - cam_output:/app/output
     networks:
       - intelli_network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8003/health"]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8004/health')"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -123,3 +131,4 @@ networks:
 volumes:
   mongo_data:
   backend_uploads:
+  cam_output:

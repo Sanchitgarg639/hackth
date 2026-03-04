@@ -1,0 +1,43 @@
+{
+  "company": {
+    "name": "Tata Steel Ltd",
+    "sector": "Manufacturing — Steel",
+    "gstin": "27AAPCT1234A1Z5",
+    "pan": "AAPCT1234A",
+    "address": "Bombay House, 24 Homi Mody Street, Mumbai 400001"
+  },
+  "financials": {
+    "period": "FY2024",
+    "revenue": 152340000000,
+    "netProfit": 8920000000,
+    "totalAssets": 198500000000,
+    "totalLiabilities": 132000000000,
+    "netWorth": 66500000000,
+    "gstTurnover": 168570000000,
+    "bankTurnover": 145200000000,
+    "dscr": 2.15,
+    "currentRatio": 1.48,
+    "debtEquityRatio": 1.98
+  },
+  "sanctionLetters": [
+    {
+      "bank": "State Bank of India",
+      "amount": 50000000000,
+      "type": "Term Loan + Working Capital",
+      "date": "2024-01-15"
+    },
+    {
+      "bank": "ICICI Bank",
+      "amount": 25000000000,
+      "type": "Working Capital Limit",
+      "date": "2024-03-20"
+    }
+  ],
+  "keyCovenants": [
+    "Maintain DSCR > 1.2x",
+    "Current ratio > 1.3x",
+    "Debt-equity ratio < 3.0x",
+    "Minimum promoter holding 51%",
+    "No dividend if DSCR < 1.5x"
+  ]
+}

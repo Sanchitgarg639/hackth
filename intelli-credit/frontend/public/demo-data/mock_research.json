@@ -1,0 +1,38 @@
+[
+    {
+        "title": "Reliance Industries posts strong Q3 profit amidst global challenges",
+        "source": "Economic Times",
+        "sentiment": 0.8,
+        "tags": [
+            "POSITIVE",
+            "FINANCIALS"
+        ]
+    },
+    {
+        "title": "Reliance expands rapid consumer retail footprint into Tier 2 cities",
+        "source": "Reuters",
+        "sentiment": 0.9,
+        "tags": [
+            "POSITIVE",
+            "EXPANSION"
+        ]
+    },
+    {
+        "title": "Regulatory scrutiny deepens over Reliance acquisition structure",
+        "source": "Business Standard",
+        "sentiment": -0.4,
+        "tags": [
+            "REGULATORY",
+            "NEGATIVE"
+        ]
+    },
+    {
+        "title": "Ongoing environmental litigation regarding Jamnagar expansion",
+        "source": "LiveLaw",
+        "sentiment": -0.7,
+        "tags": [
+            "LITIGATION",
+            "CRITICAL"
+        ]
+    }
+]

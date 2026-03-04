@@ -1,0 +1,54 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Analysis",
+  "type": "object",
+  "required": ["companyId", "status"],
+  "properties": {
+    "analysisId": { "type": "string" },
+    "fileRefs": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "companyId": { "type": "string" },
+    "extractedData": {
+      "type": "object",
+      "properties": {
+        "balanceSheet": {
+          "type": "object",
+          "properties": {
+            "totalAssets": { "type": "number" },
+            "totalLiabilities": { "type": "number" },
+            "netWorth": { "type": "number" }
+          }
+        },
+        "keyCovenants": { "type": "array", "items": { "type": "string" } },
+        "sanctionLetters": { "type": "array" },
+        "contingentLiabilities": { "type": "number" },
+        "revenue": { "type": "number" },
+        "netProfit": { "type": "number" }
+      }
+    },
+    "researchFindings": {
+      "type": "object",
+      "properties": {
+        "newsHits": { "type": "array" },
+        "litigationHits": { "type": "array" },
+        "regulatoryAlerts": { "type": "array" }
+      }
+    },
+    "riskScore": { "type": ["number", "null"] },
+    "riskDetails": {
+      "type": "object",
+      "properties": {
+        "score": { "type": "number" },
+        "grade": { "type": "string" },
+        "drivers": { "type": "array" },
+        "explainability": { "type": "string" }
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": ["queued", "extracting", "researching", "scoring", "generating", "complete", "failed"]
+    }
+  }
+}

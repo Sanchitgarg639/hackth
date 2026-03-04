@@ -1,0 +1,39 @@
+{
+  "gstin": "27AAPCT1234A1Z5",
+  "tradeName": "Tata Steel Ltd",
+  "filingPeriod": "FY2024",
+  "returns": [
+    {
+      "month": "Apr-2024",
+      "taxableValue": 12695000000,
+      "igst": 762600000,
+      "cgst": 571950000,
+      "sgst": 571950000,
+      "totalGST": 1906500000,
+      "filingDate": "2024-05-11",
+      "status": "Filed"
+    },
+    {
+      "month": "May-2024",
+      "taxableValue": 13120000000,
+      "igst": 787200000,
+      "cgst": 590400000,
+      "sgst": 590400000,
+      "totalGST": 1968000000,
+      "filingDate": "2024-06-10",
+      "status": "Filed"
+    },
+    {
+      "month": "Jun-2024",
+      "taxableValue": 12890000000,
+      "igst": 773400000,
+      "cgst": 580050000,
+      "sgst": 580050000,
+      "totalGST": 1933500000,
+      "filingDate": "2024-07-11",
+      "status": "Filed"
+    }
+  ],
+  "annualTurnover": 168570000000,
+  "complianceRating": "Excellent"
+}
