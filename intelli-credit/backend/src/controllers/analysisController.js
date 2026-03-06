@@ -73,29 +73,30 @@ async function runAnalysisPipeline(analysisId, company, fileId, requestId) {
 			const filePath = match ? path.join(uploadDir, match) : null;
 
 			if (filePath && fs.existsSync(filePath)) {
-				extractedData = await callExtraction(filePath, requestId);
+				const fileObj = { originalname: match, path: filePath };
+				extractedData = await callExtraction([fileObj], requestId);
 			} else {
 				throw new Error('File not found, using stub');
 			}
 		} catch {
-		extractedData = {
-			financials: {
-				revenue: 150000000, pat: 18000000, ebitda: 28000000,
-				netWorth: 40000000, totalDebt: 80000000,
-				totalAssets: 120000000, totalLiabilities: 80000000,
-				currentAssets: 45000000, currentLiabilities: 30000000,
-				interestExpense: 12000000, depreciation: 8000000,
-			},
-			ratios: { debtEquity: 2.0, currentRatio: 1.5, dscr: 2.33 },
-			gstAnalysis: { gstTurnover: 165000000, itcMismatchPercent: null, circularTradingRisk: false },
-			bankAnalysis: { bankTurnover: 140000000 },
-			crossVerification: { variancePercent: 15.15, revenueInflationFlag: true, analysis: 'Stub data' },
-			redFlags: [],
-			balanceSheet: { totalAssets: 120000000, totalLiabilities: 80000000, netWorth: 40000000 },
-			keyCovenants: ['Maintain DSCR > 1.2', 'Current ratio > 1.5'],
-			revenue: 150000000, netProfit: 18000000,
-		};
-	}
+			extractedData = {
+				financials: {
+					revenue: 150000000, pat: 18000000, ebitda: 28000000,
+					netWorth: 40000000, totalDebt: 80000000,
+					totalAssets: 120000000, totalLiabilities: 80000000,
+					currentAssets: 45000000, currentLiabilities: 30000000,
+					interestExpense: 12000000, depreciation: 8000000,
+				},
+				ratios: { debtEquity: 2.0, currentRatio: 1.5, dscr: 2.33 },
+				gstAnalysis: { gstTurnover: 165000000, itcMismatchPercent: null, circularTradingRisk: false },
+				bankAnalysis: { bankTurnover: 140000000 },
+				crossVerification: { variancePercent: 15.15, revenueInflationFlag: true, analysis: 'Stub data' },
+				redFlags: [],
+				balanceSheet: { totalAssets: 120000000, totalLiabilities: 80000000, netWorth: 40000000 },
+				keyCovenants: ['Maintain DSCR > 1.2', 'Current ratio > 1.5'],
+				revenue: 150000000, netProfit: 18000000,
+			};
+		}
 		analysis.extractedData = extractedData;
 		await analysis.save();
 
@@ -127,7 +128,13 @@ async function runAnalysisPipeline(analysisId, company, fileId, requestId) {
 
 		let riskResult;
 		try {
-			riskResult = await callRisk(extractedData, researchFindings, requestId);
+			const payloadForRisk = {
+				extractedData: extractedData,
+				researchFindings: researchFindings || {},
+				qualitativeAssessment: {},
+				manualInputs: {}
+			};
+			riskResult = await callRisk(payloadForRisk, requestId);
 		} catch {
 			riskResult = {
 				score: 72,
@@ -154,7 +161,14 @@ async function runAnalysisPipeline(analysisId, company, fileId, requestId) {
 
 		let camResult;
 		try {
-			camResult = await callCAM(company.toObject(), riskResult, requestId);
+			const camPayload = {
+				companyData: company.toObject() || {},
+				extractedData: extractedData || {},
+				researchFindings: researchFindings || {},
+				qualitativeAssessment: {},
+				riskAnalysis: riskResult || {}
+			};
+			camResult = await callCAM(camPayload, requestId);
 		} catch {
 			camResult = {
 				camUrl: '/static/sample-cam.pdf',
@@ -181,7 +195,7 @@ async function runAnalysisPipeline(analysisId, company, fileId, requestId) {
 		logger.error(`Analysis pipeline error: ${err.message}`);
 		try {
 			await Analysis.findByIdAndUpdate(analysisId, { status: 'failed' });
-		} catch {}
+		} catch { }
 	}
 }
 

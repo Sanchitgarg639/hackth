@@ -16,7 +16,7 @@ export default function UploadPage() {
 	const [dragOver, setDragOver] = useState(false);
 	const fileInputRef = useRef(null);
 	const navigate = useNavigate();
-	const { setCompanyId, setFileId, setExtractedData } = useCredit();
+	const { setCompanyId, setFileId, setExtractedData, reset } = useCredit();
 
 	const handleDragOver = (e) => { e.preventDefault(); setDragOver(true); };
 	const handleDragLeave = () => setDragOver(false);
@@ -44,6 +44,7 @@ export default function UploadPage() {
 			clearInterval(interval);
 			setProgress(100);
 
+			reset();
 			setCompanyId(res.data.companyId);
 			setFileId(res.data.fileId);
 			setExtractedData(res.data.extractedData);
@@ -79,18 +80,19 @@ export default function UploadPage() {
 			const resPdf = await fetch('/demo-data/sample_annual_report.pdf');
 			const blobPdf = await resPdf.blob();
 			const demoPdf = new File([blobPdf], 'Reliance_Annual_Report_2023.pdf', { type: 'application/pdf' });
-			
+
 			const resCsv = await fetch('/demo-data/sample_gst.csv');
 			const blobCsv = await resCsv.blob();
 			const demoCsv = new File([blobCsv], 'Reliance_GST_2023.csv', { type: 'text/csv' });
-			
+
 			setFiles([demoPdf, demoCsv]);
 
 			const res = await uploadFile([demoPdf, demoCsv], 'Reliance Industries', 'Conglomerate', '27AAACR5055K1Z1', 'AAACR5055K');
-			
+
 			clearInterval(interval);
 			setProgress(100);
 
+			reset();
 			setCompanyId(res.data.companyId);
 			setFileId(res.data.fileId);
 			setExtractedData(res.data.extractedData);
