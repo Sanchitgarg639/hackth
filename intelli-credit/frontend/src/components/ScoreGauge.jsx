@@ -35,7 +35,7 @@ export default function ScoreGauge({ score, grade }) {
 							clockWise 
 							dataKey="value" 
 							cornerRadius={10} 
-							background={{ fill: 'var(--bg-secondary)' }} 
+							background={{ fill: 'var(--bg-subtle)' }} 
 						/>
 					</RadialBarChart>
 				</ResponsiveContainer>

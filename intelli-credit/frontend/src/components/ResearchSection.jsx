@@ -83,7 +83,7 @@ export default function ResearchSection() {
 	if (!companyId) return null;
 
 	return (
-		<div className="glass-card" style={{ marginTop: '32px' }}>
+		<div className="enterprise-card" style={{ marginTop: '32px' }}>
 			<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
 				<div>
 					<h3 style={{ fontSize: '1.25rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -138,7 +138,7 @@ export default function ResearchSection() {
 					<div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
 						{findings.map((f, i) => (
 							<div key={i} style={{ 
-								padding: '16px', background: 'var(--bg-secondary)', 
+								padding: '16px', background: 'var(--bg-surface)', 
 								borderRadius: 'var(--radius-md)', borderLeft: `4px solid ${getSentimentColor(f.sentimentLabel)}`,
 								display: 'flex', flexDirection: 'column', gap: '8px'
 							}}>
@@ -162,8 +162,8 @@ export default function ResearchSection() {
 									<div style={{ display: 'flex', gap: '6px', marginTop: '4px', flexWrap: 'wrap' }}>
 										{f.riskTags.map(tag => (
 											<span key={tag} style={{ 
-												padding: '2px 8px', background: 'rgba(239,68,68,0.1)', 
-												border: '1px solid rgba(239,68,68,0.2)', color: 'var(--danger)', 
+												padding: '2px 8px', background: 'var(--danger-bg)', 
+												border: '1px solid var(--danger)', color: 'var(--danger)', 
 												borderRadius: '12px', fontSize: '0.7rem', fontWeight: 600 
 											}}>
 												#{tag}
@@ -185,7 +185,7 @@ export default function ResearchSection() {
 				</div>
 			)}
 
-			<div style={{ paddingTop: '24px', borderTop: '1px solid var(--border)' }}>
+			<div style={{ paddingTop: '24px', borderTop: '1px solid var(--border-default)' }}>
 				<h4 style={{ fontSize: '1rem', marginBottom: '16px' }}>✍ Credit Officer Qualitative Assessment</h4>
 				
 				<div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 250px', gap: '24px' }}>

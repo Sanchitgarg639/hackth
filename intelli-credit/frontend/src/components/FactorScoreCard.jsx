@@ -10,22 +10,22 @@ export default function FactorScoreCard({ title, score, weight, explanation, isH
 	return (
 		<div style={{ 
 			padding: '16px', 
-			background: 'var(--bg-glass)', 
+			background: 'var(--bg-surface)', 
 			borderRadius: 'var(--radius-md)', 
-			border: '1px solid var(--border)',
+			border: '1px solid var(--border-default)',
 			display: 'flex',
 			flexDirection: 'column',
 			gap: '12px'
 		}}>
 			<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
 				<div style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--text-primary)' }}>{title}</div>
-				<div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', background: 'rgba(0,0,0,0.3)', padding: '2px 8px', borderRadius: '4px' }}>
+				<div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', background: 'var(--bg-subtle)', padding: '2px 8px', borderRadius: '4px' }}>
 					Weight: {weight}
 				</div>
 			</div>
 			
 			<div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-				<div style={{ flex: 1, height: '6px', background: 'var(--bg-input)', borderRadius: '999px', overflow: 'hidden' }}>
+				<div style={{ flex: 1, height: '6px', background: 'var(--bg-subtle)', borderRadius: '999px', overflow: 'hidden' }}>
 					<div style={{ 
 						height: '100%', 
 						width: `${score}%`, 
@@ -40,7 +40,7 @@ export default function FactorScoreCard({ title, score, weight, explanation, isH
 			</div>
 
 			{explanation && (
-				<div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontStyle: 'italic', borderTop: '1px dashed rgba(255,255,255,0.1)', paddingTop: '8px' }}>
+				<div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontStyle: 'italic', borderTop: '1px dashed var(--border-strong)', paddingTop: '8px' }}>
 					"{explanation}"
 				</div>
 			)}

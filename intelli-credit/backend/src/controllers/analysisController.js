@@ -97,6 +97,7 @@ async function runAnalysisPipeline(analysisId, company, fileId, requestId) {
 		};
 	}
 		analysis.extractedData = extractedData;
+		analysis.markModified('extractedData');
 		await analysis.save();
 
 		// Stage 2: Researching
@@ -118,6 +119,7 @@ async function runAnalysisPipeline(analysisId, company, fileId, requestId) {
 			};
 		}
 		analysis.researchFindings = researchFindings;
+		analysis.markModified('researchFindings');
 		await analysis.save();
 
 		// Stage 3: Scoring
@@ -145,6 +147,7 @@ async function runAnalysisPipeline(analysisId, company, fileId, requestId) {
 		}
 		analysis.riskScore = riskResult.score || riskResult.final_score || 0;
 		analysis.riskDetails = riskResult;
+		analysis.markModified('riskDetails');
 		await analysis.save();
 
 		// Stage 4: Generating CAM
@@ -172,6 +175,7 @@ async function runAnalysisPipeline(analysisId, company, fileId, requestId) {
 		}
 		analysis.camUrl = camResult.camUrl || '/static/sample-cam.pdf';
 		analysis.camSummary = camResult.summary || {};
+		analysis.markModified('camSummary');
 		analysis.status = 'complete';
 		await analysis.save();
 

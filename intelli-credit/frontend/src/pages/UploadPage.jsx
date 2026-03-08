@@ -134,9 +134,9 @@ export default function UploadPage() {
 					{files.length > 0 ? (
 						<div className="file-list" style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'center', marginBottom: '16px' }}>
 							{files.map((f, i) => (
-								<div key={i} className="file-item" style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'var(--bg-input)', padding: '8px 16px', borderRadius: 'var(--radius-sm)' }}>
+								<div key={i} className="file-item" style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'var(--bg-subtle)', padding: '8px 16px', borderRadius: 'var(--radius-sm)' }}>
 									<span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{f.name}</span>
-									<span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{(f.size / 1024 / 1024).toFixed(2)} MB</span>
+									<span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{(f.size / 1024 / 1024).toFixed(2)} MB</span>
 									<button type="button" onClick={(e) => { e.stopPropagation(); setFiles(files.filter((_, idx) => idx !== i)); }} style={{ background: 'none', border: 'none', color: 'var(--danger)', cursor: 'pointer', fontWeight: 'bold' }}>✕</button>
 								</div>
 							))}
@@ -144,15 +144,15 @@ export default function UploadPage() {
 					) : (
 						<>
 							<p>Drag & drop your files here, or click to browse</p>
-							<p className="hint">Accepted: PDF, DOCX, CSV — Max 20MB</p>
+							<p className="hint">Accepted: PDF, CSV, XLSX, JSON — Max 20MB</p>
 						</>
 					)}
 					<input
 						ref={fileInputRef}
 						type="file"
 						multiple
-						accept=".pdf,.docx,.csv"
-						onChange={e => setFiles(Array.from(e.target.files))}
+						accept=".pdf,.csv,.xlsx,.json"
+						onChange={e => setFiles(prev => [...prev, ...Array.from(e.target.files)])}
 						style={{ display: 'none' }}
 					/>
 				</div>
@@ -165,7 +165,7 @@ export default function UploadPage() {
 				)}
 
 				{/* Company Info */}
-				<div className="glass-card">
+				<div className="enterprise-card">
 					<h3 style={{ marginBottom: '16px', fontSize: '1rem', fontWeight: 600 }}>Company Information</h3>
 					<div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' }}>
 						<div className="input-group">
@@ -197,7 +197,7 @@ export default function UploadPage() {
 					<button type="submit" className="btn btn-primary" disabled={loading || files.length === 0 || !companyName}>
 						{loading ? '⏳ Processing...' : '🚀 Upload & Extract'}
 					</button>
-					<button type="button" className="btn btn-secondary" onClick={handleDemoUpload} disabled={loading} style={{ background: 'var(--primary-glow)', borderColor: 'var(--primary)', color: 'var(--primary-light)' }}>
+					<button type="button" className="btn btn-secondary" onClick={handleDemoUpload} disabled={loading} style={{ background: 'var(--brand-light)', borderColor: 'var(--brand-primary)', color: 'var(--brand-primary)' }}>
 						⚡ Quick Demo (Pre-loaded Profile)
 					</button>
 				</div>

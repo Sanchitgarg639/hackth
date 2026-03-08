@@ -8,7 +8,7 @@ if (!fs.existsSync(uploadDir)) {
 }
 
 // Allowed file types
-const ALLOWED_EXTENSIONS = ['.pdf', '.docx', '.csv'];
+const ALLOWED_EXTENSIONS = ['.pdf', '.csv', '.xlsx', '.json'];
 const MAX_SIZE = 20 * 1024 * 1024; // 20MB
 
 // Sanitize filename: strip path traversal and special chars

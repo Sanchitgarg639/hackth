@@ -4,9 +4,9 @@ export default function ExplainabilityPanel({ reasons }) {
 	if (!reasons || reasons.length === 0) return null;
 
 	return (
-		<div className="glass-card" style={{ 
+		<div className="enterprise-card" style={{ 
 			marginTop: '24px', 
-			background: 'linear-gradient(145deg, var(--bg-card) 0%, rgba(30,30,50,0.9) 100%)',
+			background: 'var(--bg-surface) 0%, rgba(30,30,50,0.9) 100%)',
 			border: '1px solid var(--primary-glow)'
 		}}>
 			<div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px', borderBottom: '1px solid var(--border)', paddingBottom: '16px' }}>

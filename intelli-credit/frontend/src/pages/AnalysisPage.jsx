@@ -116,7 +116,7 @@ export default function AnalysisPage() {
 		].filter(i => i.value !== '—');
 
 		return (
-			<div className="glass-card" style={{ marginTop: '24px' }}>
+			<div className="enterprise-card" style={{ marginTop: '24px' }}>
 				<h3 style={{ marginBottom: '16px', fontSize: '1rem', fontWeight: 600 }}>📋 Extracted Financial Data</h3>
 				<table className="data-table">
 					<thead><tr><th>Metric</th><th>Value</th></tr></thead>
@@ -164,15 +164,15 @@ export default function AnalysisPage() {
 		if (flags.length === 0) return null;
 
 		return (
-			<div className="glass-card" style={{ marginTop: '24px', borderColor: 'var(--danger)', background: 'var(--danger-bg)' }}>
+			<div className="enterprise-card" style={{ marginTop: '24px', borderColor: 'var(--danger)', background: 'var(--danger-bg)' }}>
 				<h3 style={{ color: 'var(--danger)', marginBottom: '12px', fontSize: '1rem', fontWeight: 600 }}>
 					🚨 Audit Red Flags Detected ({flags.length})
 				</h3>
 				{flags.map((f, i) => (
 					<div key={i} style={{
 						padding: '12px 16px', marginBottom: '8px',
-						background: 'rgba(239,68,68,0.08)', borderRadius: 'var(--radius-sm)',
-						border: '1px solid rgba(239,68,68,0.2)',
+						background: 'var(--danger-bg)', borderRadius: 'var(--radius-sm)',
+						border: '1px solid var(--danger)',
 					}}>
 						<div style={{ fontWeight: 600, color: 'var(--danger)', marginBottom: '4px' }}>
 							⚠ &quot;{f.keyword}&quot;
@@ -194,9 +194,9 @@ export default function AnalysisPage() {
 		const isMismatch = gst.itcMismatchPercent != null && gst.itcMismatchPercent > 10;
 
 		return (
-			<div className="glass-card" style={{
+			<div className="enterprise-card" style={{
 				marginTop: '24px',
-				borderColor: gst.circularTradingRisk ? 'var(--danger)' : 'var(--border)',
+				borderColor: gst.circularTradingRisk ? 'var(--danger)' : 'var(--border-default)',
 			}}>
 				<h3 style={{ marginBottom: '16px', fontSize: '1rem', fontWeight: 600 }}>🧾 GST Analysis</h3>
 				<table className="data-table">
@@ -249,9 +249,9 @@ export default function AnalysisPage() {
 		const isFlag = cv.revenueInflationFlag;
 
 		return (
-			<div className="glass-card" style={{
+			<div className="enterprise-card" style={{
 				marginTop: '24px',
-				borderColor: isFlag ? 'var(--warning)' : 'var(--border)',
+				borderColor: isFlag ? 'var(--warning)' : 'var(--border-default)',
 			}}>
 				<h3 style={{ marginBottom: '16px', fontSize: '1rem', fontWeight: 600 }}>🔀 Cross-Verification (GST vs Bank)</h3>
 				<div className="summary-grid" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
@@ -293,17 +293,17 @@ export default function AnalysisPage() {
 			: 'var(--danger)';
 
 		return (
-			<div className="glass-card" style={{ marginTop: '24px' }}>
+			<div className="enterprise-card" style={{ marginTop: '24px' }}>
 				<h3 style={{ marginBottom: '16px', fontSize: '1rem', fontWeight: 600 }}>🏦 CIBIL Commercial Score</h3>
 				<div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
 					<div style={{
 						width: '80px', height: '80px', borderRadius: '50%',
 						display: 'flex', alignItems: 'center', justifyContent: 'center',
-						background: `conic-gradient(${bandColor} 0%, ${bandColor} ${(fin.cibilScore / 900) * 100}%, var(--border) ${(fin.cibilScore / 900) * 100}%)`,
+						background: `conic-gradient(${bandColor} 0%, ${bandColor} ${(fin.cibilScore / 900) * 100}%, var(--border-default) ${(fin.cibilScore / 900) * 100}%)`,
 					}}>
 						<div style={{
 							width: '64px', height: '64px', borderRadius: '50%',
-							background: 'var(--bg-secondary)', display: 'flex',
+							background: 'var(--bg-surface)', display: 'flex',
 							alignItems: 'center', justifyContent: 'center',
 							fontSize: '1.25rem', fontWeight: 700, color: bandColor,
 						}}>
@@ -332,7 +332,7 @@ export default function AnalysisPage() {
 
 			{/* Pipeline Progress */}
 			{analysisStatus && (
-				<div className="glass-card" style={{ marginBottom: '24px' }}>
+				<div className="enterprise-card" style={{ marginBottom: '24px' }}>
 					<h3 style={{ marginBottom: '16px', fontSize: '1rem', fontWeight: 600 }}>Analysis Pipeline</h3>
 					<div className="pipeline">
 						{PIPELINE_STEPS.map((step, i) => (
@@ -352,7 +352,7 @@ export default function AnalysisPage() {
 
 			{/* Start Analysis Button */}
 			{!analysisStatus && (
-				<div className="glass-card" style={{ textAlign: 'center', padding: '40px' }}>
+				<div className="enterprise-card" style={{ textAlign: 'center', padding: '40px' }}>
 					<h3 style={{ marginBottom: '8px' }}>Ready to Analyze</h3>
 					<p style={{ color: 'var(--text-secondary)', marginBottom: '24px' }}>
 						Documents uploaded. Click below to run the full AI analysis pipeline with real extraction.
@@ -381,7 +381,7 @@ export default function AnalysisPage() {
 
 			{/* Phase 4 Generate Risk Engine Model */}
 			{analysisStatus === 'complete' && (
-				<div className="glass-card" style={{ marginTop: '24px', textAlign: 'center', padding: '40px' }}>
+				<div className="enterprise-card" style={{ marginTop: '24px', textAlign: 'center', padding: '40px' }}>
 					<h3>🧠 ML Probability of Default Engine</h3>
 					<p style={{ color: 'var(--text-secondary)', marginBottom: '24px' }}>
 						All Financial and Intelligence data is ready. Click below to pipe these features into the XGBoost Risk engine.

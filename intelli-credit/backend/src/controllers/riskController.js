@@ -19,7 +19,7 @@ exports.computeRiskScore = async (req, res, next) => {
 		
 		// 1. Fetch Phase 2 Financials/Extraction Data from active Analysis
 		const analysis = await Analysis.findOne({ companyId }).sort({ createdAt: -1 });
-		if (!analysis || !analysis.extractedData) {
+		if (!analysis || !analysis.extractedData || Object.keys(analysis.extractedData).length === 0) {
 			return res.status(400).json({ error: { message: "No final extracted data found for company. Complete Phase 2 first." } });
 		}
 		

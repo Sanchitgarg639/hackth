@@ -46,44 +46,9 @@ function NavBar() {
 }
 
 function Footer() {
-	const [health, setHealth] = useState(null);
-
-	useEffect(() => {
-		const checkHealth = async () => {
-			try {
-				const res = await getSystemHealth();
-				setHealth(res.data);
-			} catch {
-				setHealth(null);
-			}
-		};
-		checkHealth();
-		const interval = setInterval(checkHealth, 30000);
-		return () => clearInterval(interval);
-	}, []);
-
-	const getStatusClass = (status) => {
-		if (status === 'ok') return 'healthy';
-		if (status === 'unreachable') return 'down';
-		return 'degraded';
-	};
-
 	return (
 		<footer className="footer">
-			<span>© 2024 Intelli-Credit AI Engine — Phase 1 Prototype</span>
-			<div className="system-status">
-				{health ? (
-					<>
-						{Object.entries(health).map(([service, status]) => (
-							<span key={service} title={`${service}: ${status}`}>
-								<span className={`status-dot ${getStatusClass(status)}`} /> {service}
-							</span>
-						))}
-					</>
-				) : (
-					<span><span className="status-dot degraded" /> Checking services...</span>
-				)}
-			</div>
+			<span>@2026 intelli credit- AI Engine</span>
 		</footer>
 	);
 }

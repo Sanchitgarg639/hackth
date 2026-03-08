@@ -109,7 +109,7 @@ export default function ReportPage() {
 				<div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
 					<ScoreGauge score={score} grade={grade} />
 					
-					<div className="glass-card" style={{ padding: '24px' }}>
+					<div className="enterprise-card" style={{ padding: '24px' }}>
 						<h4 style={{ fontSize: '0.9rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '16px' }}>
 							System Recommendation
 						</h4>
@@ -144,7 +144,7 @@ export default function ReportPage() {
 
 				{/* Right Column: Factor Scores & CAM Preview */}
 				<div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-					<div className="glass-card" style={{ padding: '24px' }}>
+					<div className="enterprise-card" style={{ padding: '24px' }}>
 						<h4 style={{ fontSize: '1rem', color: 'var(--text-primary)', marginBottom: '20px' }}>5Cs Risk Dimensions Breakdown</h4>
 						<div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
 							<FactorScoreCard title="Financial Health" score={finScore} weight="30%" explanation="Extracted directly from Phase 2 Ratios" />
