@@ -12,9 +12,12 @@ RISK_KEYWORDS = {
     "FINANCIAL_DISTRESS": ["insolvency", "nclt", "bankruptcy", "default", "rating downgrade", "liquidity crisis", "debt restructuring"],
 }
 
-def detect_keywords(text: str) -> list[str]:
+LITIGATION_FRAUD_KEYWORDS = ["LITIGATION", "FRAUD", "PROMOTER_RISK"]
+
+def detect_keywords(text: str, sentiment_score: float = 0.0) -> list[str]:
     """
     Checks the text against the dictionary classes and returns a list of risk tags.
+    For high-severity flags (Fraud, Litigation), requires explicit negative sentiment (score < -0.1).
     """
     if not text:
         return []
@@ -24,6 +27,12 @@ def detect_keywords(text: str) -> list[str]:
     
     for category, keywords in RISK_KEYWORDS.items():
         if any(kw in text_lower for kw in keywords):
-            tags.add(category)
+            # Guard high-severity flags with a negative sentiment requirement
+            # to avoid flagging resolved or neutral keyword mentions
+            if category in LITIGATION_FRAUD_KEYWORDS:
+                if sentiment_score < -0.1:
+                    tags.add(category)
+            else:
+                tags.add(category)
             
     return list(tags)

@@ -60,7 +60,7 @@ def run_research(req: ResearchRequest):
         
         # Detect risk tags from both title and snippet
         text_context = f"{item.get('title', '')} {item.get('snippet', '')}"
-        tags = detect_keywords(text_context)
+        tags = detect_keywords(text_context, sentiment_score=score)
         
         # We only keep items that are either negative/critical OR have risk tags,
         # unless we don't have enough results, then we keep everything.

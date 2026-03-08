@@ -5,8 +5,7 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Download TextBlob corpora (nltk data)
-RUN python -m textblob.download_corpora lite
+# FinBERT model will be downloaded on first run via transformers
 
 COPY . .
 

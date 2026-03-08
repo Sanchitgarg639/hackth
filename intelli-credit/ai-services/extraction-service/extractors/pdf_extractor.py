@@ -37,7 +37,7 @@ FINANCIAL_PATTERNS = [
     ("pat", r"(?:Profit\s+After\s+Tax|PAT|Net\s+Profit)[^\d₹]*[₹Rs\.]*\s*([\d,\.]+)", 1),
     ("totalAssets", r"(?:Total\s+Assets)[^\d₹]*[₹Rs\.]*\s*([\d,\.]+)", 1),
     ("totalLiabilities", r"(?:Total\s+Liabilities)[^\d₹]*[₹Rs\.]*\s*([\d,\.]+)", 1),
-    ("netWorth", r"(?:Net\s+Worth|Shareholders?\s+(?:Equity|Fund))[^\d₹]*[₹Rs\.]*\s*([\d,\.]+)", 1),
+    ("netWorth", r"(?:Net\s+Worth|Total\s+Equity|Other\s+Equity|Shareholders?\s+(?:Equity|Fund))[^\d₹]*[₹Rs\.]*\s*([\d,\.]+)", 1),
     ("totalDebt", r"(?:Total\s+(?:Debt|Borrowings?))[^\d₹]*[₹Rs\.]*\s*([\d,\.]+)", 1),
     ("currentAssets", r"(?:(?:Total\s+)?Current\s+Assets)[^\d₹]*[₹Rs\.]*\s*([\d,\.]+)", 1),
     ("currentLiabilities", r"(?:(?:Total\s+)?Current\s+Liabilities)[^\d₹]*[₹Rs\.]*\s*([\d,\.]+)", 1),
@@ -116,13 +116,17 @@ def extract_financials(content: bytes) -> dict:
 
     financials = {}
 
-    # Extract each financial metric using regex
+    # Extract each financial metric using regex (find ALL and take the max to get consolidated values)
     for field, pattern, group in FINANCIAL_PATTERNS:
-        match = re.search(pattern, text, re.IGNORECASE)
-        if match:
-            value = parse_amount(match.group(group))
-            if value is not None:
-                financials[field] = value
+        matches = re.finditer(pattern, text, re.IGNORECASE)
+        all_values = []
+        for match in matches:
+            val = parse_amount(match.group(group))
+            if val is not None:
+                all_values.append(val)
+        
+        if all_values:
+            financials[field] = max(all_values)
 
     # Extract CIBIL score
     cibil_match = re.search(CIBIL_PATTERN, text, re.IGNORECASE)
