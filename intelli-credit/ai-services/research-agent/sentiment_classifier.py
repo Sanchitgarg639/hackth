@@ -2,7 +2,11 @@
 Sentiment Classifier
 Uses TextBlob for lightweight, CPU-friendly sentiment analysis.
 """
-from textblob import TextBlob
+from transformers import pipeline
+
+# Initialize FinBERT pipeline
+# Explicitly use ProsusAI/finbert for financial text
+sentiment_pipeline = pipeline("sentiment-analysis", model="ProsusAI/finbert")
 
 def analyze_sentiment(text: str) -> tuple[float, str]:
     """
@@ -13,16 +17,32 @@ def analyze_sentiment(text: str) -> tuple[float, str]:
     if not text:
         return 0.0, "NEUTRAL"
         
-    analysis = TextBlob(text)
-    score = analysis.sentiment.polarity
+    # Truncate text to avoid BERT max token length limits
+    safe_text = text[:512]
     
-    if score > 0.3:
-        label = "POSITIVE"
-    elif score > 0:
-        label = "NEUTRAL"
-    elif score > -0.3:
-        label = "NEGATIVE"
-    else:
-        label = "CRITICAL"
+    try:
+        result = sentiment_pipeline(safe_text)[0]
+        label_raw = result['label']
+        score_raw = result['score'] # Confidence of the label
+        
+        # Map FinBERT labels back to our -1.0 to 1.0 scale
+        if label_raw == "positive":
+            score = score_raw
+            label = "POSITIVE"
+        elif label_raw == "negative":
+            # Very high confidence negative is CRITICAL
+            if score_raw > 0.8:
+                score = -score_raw
+                label = "CRITICAL"
+            else:
+                score = -score_raw
+                label = "NEGATIVE"
+        else: # "neutral"
+            score = 0.0
+            label = "NEUTRAL"
+            
+    except Exception as e:
+        # Fallback if pipeline fails
+        return 0.0, "NEUTRAL"
         
     return score, label

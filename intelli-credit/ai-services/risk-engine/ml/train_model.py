@@ -90,7 +90,6 @@ def create_synthetic_data(n_samples=5000):
         - (mgmt_rating * 0.5)                    # Good management reduces risk
         - (collateral_coverage * 0.8)            # Adequate collateral is a strong mitigant
     )
-
     # Convert arbitrary scale to probability via logistic function.
     # Centered at 0.0 (not -1.0) so the average company lands at ~50% default prob,
     # which then differentiates well across the ful good-to-bad spectrum.
@@ -150,5 +149,42 @@ def train():
     
     logger.info("Training complete. model.pkl and shap_explainer.pkl generated successfully.")
 
+def test_inference():
+    """
+    Load the trained model and run an actual deterministic prediction
+    to generate the real result in this file.
+    """
+    logger.info("--- Running Actual ML Inference ---")
+    model = joblib.load(MODEL_PATH)
+    explainer = joblib.load(EXPLAINER_PATH)
+    
+    # Real deterministic features matching the pipeline
+    demo_features = pd.DataFrame([{
+        "de_ratio": 1.25,
+        "dscr": 2.50,
+        "pat_margin": 0.12,
+        "gst_variance": 0.0,
+        "itc_mismatch": 0.0,
+        "avg_sentiment": 0.8,
+        "critical_news": 0,
+        "fraud_flag": 0,
+        "litigation_flag": 0,
+        "site_rating": 4,
+        "mgmt_rating": 4,
+        "collateral_coverage": 1.5
+    }])
+    
+    prediction = model.predict(demo_features)[0]
+    prob = model.predict_proba(demo_features)[0][1]
+    
+    logger.info(f"Input Features:\\n{demo_features.to_string(index=False)}")
+    logger.info(f"Actual Model Prediction (Default = 1, Safe = 0): {prediction}")
+    logger.info(f"Actual Probability of Default (PD): {prob:.2%}")
+    
+    shap_values = explainer(demo_features)
+    logger.info(f"Top drivers (SHAP Base values): {shap_values.values[0][:3]}")
+    logger.info("--- Inference Complete ---")
+
 if __name__ == "__main__":
     train()
+    test_inference()
