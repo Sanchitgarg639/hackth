@@ -73,29 +73,36 @@ async function runAnalysisPipeline(analysisId, company, fileId, requestId) {
 			const filePath = match ? path.join(uploadDir, match) : null;
 
 			if (filePath && fs.existsSync(filePath)) {
-				extractedData = await callExtraction(filePath, requestId);
+				// The aiClient.callExtraction expects an array of file objects resembling multer's req.files
+				const fileObj = {
+					path: filePath,
+					originalname: match,
+					filename: match
+				};
+				extractedData = await callExtraction([fileObj], requestId);
 			} else {
 				throw new Error('File not found, using stub');
 			}
-		} catch {
-		extractedData = {
-			financials: {
-				revenue: 150000000, pat: 18000000, ebitda: 28000000,
-				netWorth: 40000000, totalDebt: 80000000,
-				totalAssets: 120000000, totalLiabilities: 80000000,
-				currentAssets: 45000000, currentLiabilities: 30000000,
-				interestExpense: 12000000, depreciation: 8000000,
-			},
-			ratios: { debtEquity: 2.0, currentRatio: 1.5, dscr: 2.33 },
-			gstAnalysis: { gstTurnover: 165000000, itcMismatchPercent: null, circularTradingRisk: false },
-			bankAnalysis: { bankTurnover: 140000000 },
-			crossVerification: { variancePercent: 15.15, revenueInflationFlag: true, analysis: 'Stub data' },
-			redFlags: [],
-			balanceSheet: { totalAssets: 120000000, totalLiabilities: 80000000, netWorth: 40000000 },
-			keyCovenants: ['Maintain DSCR > 1.2', 'Current ratio > 1.5'],
-			revenue: 150000000, netProfit: 18000000,
-		};
-	}
+		} catch (err) {
+			logger.warn(`[${requestId}] Extraction failed or file missing, using stub: ${err.message}`);
+			extractedData = {
+				financials: {
+					revenue: 150000000, pat: 18000000, ebitda: 28000000,
+					netWorth: 40000000, totalDebt: 80000000,
+					totalAssets: 120000000, totalLiabilities: 80000000,
+					currentAssets: 45000000, currentLiabilities: 30000000,
+					interestExpense: 12000000, depreciation: 8000000,
+				},
+				ratios: { debtEquity: 2.0, currentRatio: 1.5, dscr: 2.33 },
+				gstAnalysis: { gstTurnover: 165000000, itcMismatchPercent: null, circularTradingRisk: false },
+				bankAnalysis: { bankTurnover: 140000000 },
+				crossVerification: { variancePercent: 15.15, revenueInflationFlag: true, analysis: 'Stub data' },
+				redFlags: [],
+				balanceSheet: { totalAssets: 120000000, totalLiabilities: 80000000, netWorth: 40000000 },
+				keyCovenants: ['Maintain DSCR > 1.2', 'Current ratio > 1.5'],
+				revenue: 150000000, netProfit: 18000000,
+			};
+		}
 		analysis.extractedData = extractedData;
 		analysis.markModified('extractedData');
 		await analysis.save();
@@ -108,14 +115,20 @@ async function runAnalysisPipeline(analysisId, company, fileId, requestId) {
 		let researchFindings;
 		try {
 			researchFindings = await callResearch(company.name, company.gstin, requestId);
-		} catch {
+		} catch (err) {
+			logger.warn(`[${requestId}] Research agent failed, using stub: ${err.message}`);
 			researchFindings = {
-				newsHits: [
-					{ title: 'Company Q3 results exceed expectations', sentiment: 'positive', source: 'Economic Times' },
-					{ title: 'Sector outlook upgraded by analysts', sentiment: 'positive', source: 'Mint' },
+				findings: [
+					{ title: 'Company Q3 results exceed expectations', sentiment_label: 'POSITIVE', sentiment_score: 0.8, risk_tags: [] },
+					{ title: 'Sector outlook upgraded by analysts', sentiment_label: 'POSITIVE', sentiment_score: 0.6, risk_tags: [] },
 				],
-				litigationHits: [],
-				regulatoryAlerts: [],
+				summary: {
+					total_items: 2,
+					critical_count: 0,
+					negative_count: 0,
+					avg_sentiment: 0.7,
+					unique_risk_tags: []
+				}
 			};
 		}
 		analysis.researchFindings = researchFindings;
@@ -127,25 +140,35 @@ async function runAnalysisPipeline(analysisId, company, fileId, requestId) {
 		await analysis.save();
 		await delay(1500);
 
-		let riskResult;
 		try {
-			riskResult = await callRisk(extractedData, researchFindings, requestId);
-		} catch {
+			const riskPayload = {
+				extractedData,
+				researchFindings: researchFindings.summary || {},
+				qualitativeAssessment: {
+					siteVisitRating: null,
+					managementQualityRating: null,
+					notes: 'Automated pipeline assessment'
+				},
+				manualInputs: {}
+			};
+			riskResult = await callRisk(riskPayload, requestId);
+		} catch (err) {
+			logger.warn(`[${requestId}] Risk scoring failed, using stub: ${err.message}`);
 			riskResult = {
 				score: 72,
 				grade: 'Moderate Risk',
+				pd: 0.28,
 				drivers: [
 					{ factor: 'Strong GST turnover', impact: 15 },
 					{ factor: 'Healthy DSCR ratio', impact: 10 },
-					{ factor: 'Clean litigation record', impact: 8 },
-					{ factor: 'Sector cyclicality', impact: -5 },
 				],
 				recommendedLimit: 25000000,
 				suggestedInterestRate: '11.75%',
-				explainability: 'Stub scoring — weighted factor model',
+				reasons: [{ factor: 'Fallback', text: 'Stub scoring — weighted factor model', impact: 'Neutral' }],
+				features_used: {}
 			};
 		}
-		analysis.riskScore = riskResult.score || riskResult.final_score || 0;
+		analysis.riskScore = riskResult.score || 0;
 		analysis.riskDetails = riskResult;
 		analysis.markModified('riskDetails');
 		await analysis.save();
@@ -157,8 +180,15 @@ async function runAnalysisPipeline(analysisId, company, fileId, requestId) {
 
 		let camResult;
 		try {
-			camResult = await callCAM(company.toObject(), riskResult, requestId);
-		} catch {
+			const camPayload = {
+				company: company.toObject(),
+				riskResult,
+				extractedData,
+				researchFindings
+			};
+			camResult = await callCAM(camPayload, requestId);
+		} catch (err) {
+			logger.warn(`[${requestId}] CAM generation failed, using stub: ${err.message}`);
 			camResult = {
 				camUrl: '/static/sample-cam.pdf',
 				summary: {
@@ -185,7 +215,7 @@ async function runAnalysisPipeline(analysisId, company, fileId, requestId) {
 		logger.error(`Analysis pipeline error: ${err.message}`);
 		try {
 			await Analysis.findByIdAndUpdate(analysisId, { status: 'failed' });
-		} catch {}
+		} catch { }
 	}
 }
 

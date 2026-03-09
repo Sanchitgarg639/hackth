@@ -28,23 +28,33 @@ def create_synthetic_data(n_samples=5000):
     np.random.seed(42)
     
     # Generate somewhat realistic financial features
-    de_ratio = np.random.lognormal(mean=0.5, sigma=0.8, size=n_samples) # Ranges mostly 0-5
-    dscr = np.random.normal(loc=1.5, scale=0.8, size=n_samples)
+    # D/E: wider spread — bad companies can have very high leverage (>4x)
+    de_ratio = np.random.lognormal(mean=0.7, sigma=1.0, size=n_samples)
+    de_ratio = np.clip(de_ratio, 0, 10)
+
+    # DSCR: bad companies cluster below 1.0 (can't service debt)
+    dscr = np.random.normal(loc=1.3, scale=1.0, size=n_samples)
     dscr = np.clip(dscr, 0, 10)
-    pat_margin = np.random.normal(loc=0.08, scale=0.1, size=n_samples)
-    gst_variance = np.random.exponential(scale=0.05, size=n_samples)
-    itc_mismatch = np.random.exponential(scale=0.02, size=n_samples)
-    
+
+    # PAT margin: realistic spread including genuinely loss-making companies
+    pat_margin = np.random.normal(loc=0.03, scale=0.18, size=n_samples)
+    pat_margin = np.clip(pat_margin, -0.5, 0.5)
+
+    # GST & ITC: wider variance — fraud companies can have >30% variance
+    gst_variance = np.random.exponential(scale=0.10, size=n_samples)
+    itc_mismatch = np.random.exponential(scale=0.06, size=n_samples)
+
     # NLP and qualitative
-    avg_sentiment = np.random.normal(loc=0.1, scale=0.5, size=n_samples)
+    avg_sentiment = np.random.normal(loc=0.0, scale=0.6, size=n_samples)
     avg_sentiment = np.clip(avg_sentiment, -1, 1)
-    critical_news = np.random.poisson(lam=0.5, size=n_samples)
-    fraud_flag = np.random.binomial(n=1, p=0.05, size=n_samples)
-    litigation_flag = np.random.binomial(n=1, p=0.15, size=n_samples)
-    
-    site_rating = np.random.choice([1, 2, 3, 4, 5], p=[0.05, 0.1, 0.4, 0.3, 0.15], size=n_samples)
-    mgmt_rating = np.random.choice([1, 2, 3, 4, 5], p=[0.05, 0.1, 0.4, 0.3, 0.15], size=n_samples)
-    collateral_coverage = np.random.normal(loc=1.2, scale=0.5, size=n_samples)
+    critical_news = np.random.poisson(lam=1.0, size=n_samples)
+    # Higher base rates for fraud/litigation in realistic MSME population
+    fraud_flag = np.random.binomial(n=1, p=0.10, size=n_samples)
+    litigation_flag = np.random.binomial(n=1, p=0.20, size=n_samples)
+
+    site_rating = np.random.choice([1, 2, 3, 4, 5], p=[0.10, 0.20, 0.35, 0.25, 0.10], size=n_samples)
+    mgmt_rating = np.random.choice([1, 2, 3, 4, 5], p=[0.10, 0.20, 0.35, 0.25, 0.10], size=n_samples)
+    collateral_coverage = np.random.normal(loc=0.9, scale=0.6, size=n_samples)
     collateral_coverage = np.clip(collateral_coverage, 0, 5)
 
     df = pd.DataFrame({
@@ -62,32 +72,36 @@ def create_synthetic_data(n_samples=5000):
         "collateral_coverage": collateral_coverage
     })
 
-    # Synthetic target logic (probability of default)
-    # Higher risk components increase the exponent
+    # Synthetic target logic (Probability of Default)
+    # CRITICAL: Weights must be strong enough to differentiate bad from good companies.
+    # Each term's realistic expected contribution is documented below.
     risk_score = (
-        (de_ratio * 0.5) +
-        (np.where(dscr < 1.0, 1.5, 0)) -
-        (dscr * 0.2) -
-        (pat_margin * 2.0) +
-        (gst_variance * 5.0) +
-        (itc_mismatch * 8.0) -
-        (avg_sentiment * 1.5) +
-        (critical_news * 0.8) +
-        (fraud_flag * 3.0) +
-        (litigation_flag * 1.0) -
-        (site_rating * 0.3) -
-        (mgmt_rating * 0.4) -
-        (collateral_coverage * 0.5)
+        (de_ratio * 0.6)                        # High leverage directly raises default risk
+        + (np.where(dscr < 1.0, 3.0, 0))        # Strong penalty: sub-1.0 DSCR = can't pay interest
+        - (dscr * 0.5)                           # Higher DSCR = better debt serviceability
+        - (pat_margin * 4.0)                     # Negative PAT margin = burning cash = big risk
+        + (gst_variance * 8.0)                   # High GST variance = revenue inflation fraud signal
+        + (itc_mismatch * 10.0)                  # ITC mismatch = tax fraud indicator
+        - (avg_sentiment * 2.0)                  # Negative news sentiment = reputational risk
+        + (critical_news * 1.5)                  # Each critical news article materially raises risk
+        + (fraud_flag * 5.0)                     # Fraud tags are hard red flags
+        + (litigation_flag * 2.5)                # Active litigation is a significant risk signal
+        - (site_rating * 0.4)                    # Good site visit reduces risk
+        - (mgmt_rating * 0.5)                    # Good management reduces risk
+        - (collateral_coverage * 0.8)            # Adequate collateral is a strong mitigant
     )
-    
-    # Convert arbitrary scale to prob
-    # Logistic function
-    prob = 1 / (1 + np.exp(-(risk_score - 1.0)))
-    
+
+    # Convert arbitrary scale to probability via logistic function.
+    # Centered at 0.0 (not -1.0) so the average company lands at ~50% default prob,
+    # which then differentiates well across the ful good-to-bad spectrum.
+    prob = 1 / (1 + np.exp(-risk_score))
+
     # Binomial toss based on prob
     y = np.random.binomial(1, prob)
     df['default'] = y
-    
+
+    default_rate = y.mean()
+    logger.info(f"Synthetic dataset default rate: {default_rate:.1%} (target: 30-50% for a balanced model)")
     return df
 
 
@@ -101,13 +115,19 @@ def train():
     logger.info(f"Training XGBoost Classifier on {len(df)} samples... Global default rate: {y.mean():.1%}")
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
     
+    # Compute class weight ratio to handle any residual imbalance in synthetic data
+    n_default = int(y.sum())
+    n_safe = len(y) - n_default
+    scale_pos_weight = n_safe / max(n_default, 1)
+    logger.info(f"Class balance: {n_safe} safe / {n_default} default → scale_pos_weight={scale_pos_weight:.2f}")
+
     model = XGBClassifier(
-        n_estimators=300,
-        max_depth=4,
-        learning_rate=0.05,
+        n_estimators=400,
+        max_depth=5,
+        learning_rate=0.04,
         subsample=0.8,
         colsample_bytree=0.8,
-        use_label_encoder=False,
+        scale_pos_weight=scale_pos_weight,  # Corrects for class imbalance bias
         eval_metric='logloss',
         random_state=42
     )

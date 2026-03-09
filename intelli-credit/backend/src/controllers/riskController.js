@@ -18,9 +18,51 @@ exports.computeRiskScore = async (req, res, next) => {
 		logger.info(`[${req.id}] Aggregating data for Risk Engine scoring for company ${companyId}`);
 		
 		// 1. Fetch Phase 2 Financials/Extraction Data from active Analysis
-		const analysis = await Analysis.findOne({ companyId }).sort({ createdAt: -1 });
+		let analysis = await Analysis.findOne({ companyId }).sort({ createdAt: -1 });
+		
+		// Fallback: If no analysis or no extracted data, check if Financial record exists
+		// This happens if the user just uploaded but hasn't run the full analysis pipeline yet.
 		if (!analysis || !analysis.extractedData || Object.keys(analysis.extractedData).length === 0) {
-			return res.status(400).json({ error: { message: "No final extracted data found for company. Complete Phase 2 first." } });
+			const financial = await Financial.findOne({ companyId }).sort({ createdAt: -1 });
+			if (financial) {
+				logger.info(`[${req.id}] Found Financial record for company ${companyId}, using as fallback for Phase 2`);
+				
+				// Initialize analysis if it doesn't exist
+				if (!analysis) {
+					analysis = new Analysis({ companyId, status: 'scoring' });
+				}
+
+				// Map Financial record back to extractedData format
+				analysis.extractedData = {
+					financials: {
+						revenue: financial.revenue,
+						pat: financial.pat,
+						ebitda: financial.ebitda,
+						netWorth: financial.netWorth,
+						totalDebt: financial.totalDebt,
+						totalAssets: financial.totalAssets,
+						totalLiabilities: financial.totalLiabilities,
+						currentAssets: financial.currentAssets,
+						currentLiabilities: financial.currentLiabilities,
+						interestExpense: financial.interestExpense,
+						depreciation: financial.depreciation,
+						cibilScore: financial.cibilScore,
+						cibilBand: financial.cibilBand
+					},
+					ratios: financial.ratios,
+					gstAnalysis: financial.gstAnalysis,
+					bankAnalysis: financial.bankAnalysis,
+					crossVerification: financial.crossVerification,
+					redFlags: financial.redFlags,
+					// Flattened fields for compatibility
+					revenue: financial.revenue,
+					netProfit: financial.pat,
+					liabilities: financial.totalLiabilities,
+					dscr: financial.ratios?.dscr
+				};
+			} else {
+				return res.status(400).json({ error: { message: "No final extracted data found for company. Please ensure files are processed or complete Phase 2 first." } });
+			}
 		}
 		
 		// 2. Fetch Phase 3 Research & Qualitative
@@ -28,7 +70,7 @@ exports.computeRiskScore = async (req, res, next) => {
 		const findings = await ResearchFinding.find({ companyId });
 		
 		const researchSummary = {
-			avg_sentiment: findings.length ? findings.reduce((a, b) => a + b.sentimentScore, 0) / findings.length : 0,
+			avg_sentiment: findings.length ? findings.reduce((a, b) => a + b.sentimentScore, 0) / findings.length : null,
 			critical_count: findings.filter(f => f.sentimentLabel === 'CRITICAL').length,
 			unique_risk_tags: [...new Set(findings.map(f => f.riskTags).flat())]
 		};
@@ -38,8 +80,8 @@ exports.computeRiskScore = async (req, res, next) => {
 			extractedData: analysis.extractedData,
 			researchFindings: researchSummary,
 			qualitativeAssessment: {
-				siteVisitRating: latestQualitative.siteVisitRating || 3,
-				managementQualityRating: latestQualitative.managementQualityRating || 3,
+				siteVisitRating: latestQualitative.siteVisitRating || null,
+				managementQualityRating: latestQualitative.managementQualityRating || null,
 				notes: latestQualitative.notes || ''
 			},
 			manualInputs: manualInputs || {}

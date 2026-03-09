@@ -33,11 +33,19 @@ def generate_explanations(explainer, model, features_df):
     # SHAP returns raw log-odds (margin) space.
     # Convert base_value to probability space
     base_value = explainer.expected_value
-    if isinstance(base_value, np.ndarray):
-        base_value = base_value[-1] # if multiclass/list
-        
-    values = shap_values[0] # Single prediction row
     
+    # XGBClassifier returns a list for Binary [class0, class1] or a single array
+    # If it's a list, we want class 1 (Probability of Default)
+    if isinstance(shap_values, list):
+        values = shap_values[1][0]
+        if isinstance(base_value, (list, np.ndarray)):
+            base_value = base_value[1]
+    else:
+        # If it's a single array, it usually represents the log-odds of class 1
+        values = shap_values[0]
+        if isinstance(base_value, (list, np.ndarray)):
+            base_value = base_value[-1]
+            
     reasons = []
     
     # Sort features by absolute impact magnitude
