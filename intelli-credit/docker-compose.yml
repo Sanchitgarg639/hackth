@@ -9,7 +9,9 @@ services:
     volumes:
       - mongo_data:/data/db
     networks:
-      - intelli_network
+      intelli_network:
+        aliases:
+          - mongodb
     restart: unless-stopped
     healthcheck:
       test: echo "db.runCommand('ping').ok" | mongosh localhost:27017/test --quiet
@@ -57,8 +59,6 @@ services:
     volumes:
       - ./frontend:/usr/src/app
       - /usr/src/app/node_modules
-    environment:
-      - VITE_API_BASE_URL=http://localhost:5000
     networks:
       - intelli_network
     depends_on:

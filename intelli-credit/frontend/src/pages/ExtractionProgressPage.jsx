@@ -96,6 +96,15 @@ export default function ExtractionProgressPage() {
 			} catch (err) {
 				setError('Failed to start analysis: ' + (err.response?.data?.error?.message || err.message));
 			}
+		} else if (analysisId) {
+			try {
+				const res = await startAnalysis(null, null, analysisId);
+				ctxSetAnalysisId(prev => prev || res.data.analysisId);
+				setAnalysisStatus('queued');
+				navigate('/analyze');
+			} catch (err) {
+				setError('Failed to start analysis: ' + (err.response?.data?.error?.message || err.message));
+			}
 		} else {
 			// Navigate to analyze even without legacy pipeline
 			navigate('/analyze');

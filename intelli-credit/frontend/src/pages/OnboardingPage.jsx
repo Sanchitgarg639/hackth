@@ -86,6 +86,10 @@ export default function OnboardingPage() {
 			setAnalysisIdHeader(res.data.analysisId);
 
 			setToast({ type: 'success', message: `✓ Onboarding created — ID: ${res.data.analysisId.substring(0, 12)}...` });
+			
+			// Optional: Navigate to `/upload` if you want documents, but to fix the "Queued" flow:
+			// Let's directly navigate to `/upload` as before, but the problem was `ExtractionProgressPage` / `/upload` flow 
+			// wasn't triggering `startAnalysis` for onboarding. Wait, looking at the code, OnboardingPage navigates to '/upload'.
 			setTimeout(() => navigate('/upload'), 1000);
 		} catch (err) {
 			const msg = err.response?.data?.error?.message || err.message || 'Onboarding failed';
