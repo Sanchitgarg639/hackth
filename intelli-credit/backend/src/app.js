@@ -13,6 +13,9 @@ const riskRoutes = require('./routes/riskRoutes');
 const reportRoutes = require('./routes/reportRoutes');
 const researchRoutes = require('./routes/researchRoutes');
 const qualitativeRoutes = require('./routes/qualitativeRoutes');
+const onboardRoutes = require('./routes/onboardRoutes');
+const classifyRoutes = require('./routes/classifyRoutes');
+const pipelineStatusRoutes = require('./routes/pipelineStatusRoutes');
 const { checkAllHealth } = require('./services/aiClient');
 const env = require('./config/env');
 
@@ -32,7 +35,7 @@ app.use(morgan(':method :url :status :response-time ms - :req[x-request-id]'));
 // ─── Rate Limiting ──────────────────────────────────────
 const limiter = rateLimit({
 	windowMs: 15 * 60 * 1000, // 15 minutes
-	max: 100,
+	max: 200,
 	standardHeaders: true,
 	legacyHeaders: false,
 	message: { error: { code: 'RATE_LIMIT', message: 'Too many requests, try again later' } },
@@ -40,8 +43,8 @@ const limiter = rateLimit({
 app.use(limiter);
 
 // ─── Body Parsing ───────────────────────────────────────
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '25mb' }));
+app.use(express.urlencoded({ extended: true, limit: '25mb' }));
 
 // ─── Static Files (for CAM downloads) ───────────────────
 app.use('/static', express.static(path.join(__dirname, '../static')));
@@ -60,7 +63,7 @@ app.get('/health', (req, res) => {
 		status: 'ok',
 		uptime: Math.floor((Date.now() - startTime) / 1000),
 		time: new Date().toISOString(),
-		version: '1.0.0',
+		version: '2.0.0',
 	});
 });
 
@@ -81,12 +84,22 @@ app.get('/system/health', async (req, res) => {
 });
 
 // ─── API v1 Routes ──────────────────────────────────────
+app.use('/api/v1/onboard', onboardRoutes);
+app.use('/api/v1/classify', classifyRoutes);
+app.use('/api/v1/pipeline-status', pipelineStatusRoutes);
+
+// GET /api/v1/extraction-status/:analysisId — polled by ExtractionProgressPage
+// Reuses the same controller as pipeline-status for progress data
+const { getPipelineStatus } = require('./controllers/pipelineStatusController');
+app.get('/api/v1/extraction-status/:analysisId', getPipelineStatus);
+
 app.use('/api/v1/upload', uploadRoutes);
 app.use('/api/v1/analyze', analysisRoutes);
 app.use('/api/v1/risk', riskRoutes);
 app.use('/api/v1/report', reportRoutes);
 app.use('/api/v1/research', researchRoutes);
 app.use('/api/v1/qualitative', qualitativeRoutes);
+
 
 // ─── 404 Handler ────────────────────────────────────────
 app.use((req, res) => {

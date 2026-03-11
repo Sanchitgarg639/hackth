@@ -16,6 +16,28 @@ exports.uploadDocument = async (req, res, next) => {
 			});
 		}
 
+		// ── Input Sanitization ─────────────────────────────
+		const ALLOWED_EXTS = ['.pdf', '.xlsx', '.xls', '.csv'];
+		const MAX_SIZE = 25 * 1024 * 1024; // 25MB
+
+		for (const file of req.files) {
+			const ext = require('path').extname(file.originalname).toLowerCase();
+			if (!ALLOWED_EXTS.includes(ext)) {
+				return res.status(400).json({
+					error: { code: 'INVALID_TYPE', message: `File type ${ext} not allowed. Accepted: ${ALLOWED_EXTS.join(', ')}` }
+				});
+			}
+			if (file.size > MAX_SIZE) {
+				return res.status(400).json({
+					error: { code: 'FILE_TOO_LARGE', message: `File ${file.originalname} exceeds 25MB limit` }
+				});
+			}
+			// Virus scan stub
+			if (file.size > 10 * 1024 * 1024) {
+				logger.warn(`[${req.id}] VIRUS_SCAN_STUB: Large file ${file.originalname} (${(file.size / 1024 / 1024).toFixed(1)}MB) — manual review recommended`);
+			}
+		}
+
 		const { companyName, sector, gstin, pan, address } = req.body;
 
 		// 1. Save company

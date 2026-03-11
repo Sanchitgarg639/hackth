@@ -1,13 +1,40 @@
-from fastapi import FastAPI
+"""
+CAM Generator Service — Credit Appraisal Memo Generator (Phase 2)
+Generates DOCX reports, SWOT analysis, and XLSX data exports.
+
+v2.0: Added /generate-swot (Gemini/heuristic), /generate-xlsx (openpyxl).
+"""
+
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel
-from typing import Optional
+from fastapi.responses import StreamingResponse
 import uvicorn
 import os
-from docx import Document
+import io
+import json
+import logging
+from datetime import datetime
 
-app = FastAPI(title="CAM Generator Service", version="0.1.0")
+from docx import Document
+from docx.shared import Inches, Pt, RGBColor
+from docx.enum.text import WD_ALIGN_PARAGRAPH
+
+try:
+    from ai_provider import call_ai_json, GEMINI_KEY
+except ImportError:
+    GEMINI_KEY = ""
+    def call_ai_json(prompt): return {}
+
+try:
+    from openpyxl import Workbook
+    from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+    HAS_OPENPYXL = True
+except ImportError:
+    HAS_OPENPYXL = False
+
+logger = logging.getLogger(__name__)
+
+app = FastAPI(title="CAM Generator Service", version="2.0.0")
 
 app.add_middleware(
     CORSMiddleware,
@@ -17,114 +44,310 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Serve generated files
-os.makedirs("output", exist_ok=True)
-app.mount("/static", StaticFiles(directory="output"), name="static")
+OUTPUT_DIR = "/app/output"
+os.makedirs(OUTPUT_DIR, exist_ok=True)
 
-class CamRequest(BaseModel):
-    company_data: Optional[dict] = {}
-    risk_analysis: Optional[dict] = {}
 
 @app.get("/health")
 def health_check():
-    return {"status": "ok", "service": "cam-generator", "version": "0.1"}
-
-@app.post("/generate")
-def generate_cam(req: CamRequest):
-    """
-    Generate Credit Appraisal Memo (DOCX).
-    Phase 1: Creates a structured template-based document.
-    """
-    company = req.company_data or {}
-    risk = req.risk_analysis or {}
-    company_name = company.get("name", "Unknown Company")
-
-    # Generate DOCX
-    doc = Document()
-
-    # Title
-    doc.add_heading("CREDIT APPRAISAL MEMORANDUM", 0)
-    doc.add_paragraph(f"Prepared for: {company_name}")
-    doc.add_paragraph(f"GSTIN: {company.get('gstin', 'N/A')}")
-    doc.add_paragraph(f"PAN: {company.get('pan', 'N/A')}")
-    doc.add_paragraph("─" * 50)
-
-    # Executive Summary
-    doc.add_heading("1. Executive Summary", level=1)
-    score = risk.get("score", risk.get("final_score", "N/A"))
-    grade = risk.get("grade", risk.get("decision", "N/A"))
-    doc.add_paragraph(f"Risk Score: {score}/100")
-    doc.add_paragraph(f"Risk Grade: {grade}")
-    doc.add_paragraph(
-        f"Recommendation: {'Approve with standard conditions' if str(score).isdigit() and int(str(score)) >= 70 else 'Review required — enhanced due diligence recommended'}"
-    )
-
-    # Five Cs Assessment
-    doc.add_heading("2. Five Cs of Credit Assessment", level=1)
-
-    five_cs = {
-        "Character": "Stable — promoter track record is clean with no defaults in last 5 years. CIBIL score indicates good repayment history.",
-        "Capacity": f"Adequate — Debt Service Coverage Ratio (DSCR) of 1.85x indicates strong ability to meet debt obligations. Current ratio at 1.5x.",
-        "Capital": f"Moderate — Net worth of ₹4,00,00,000. Debt-equity ratio at 2.0x is within acceptable limits for the sector.",
-        "Collateral": "Partial — Primary security offered includes hypothecation of stock and book debts. Additional collateral may be required for limits above ₹2.5Cr.",
-        "Conditions": "Watchlist — Sector is under regulatory review. RBI has flagged concerns about unsecured lending growth in this segment.",
+    return {
+        "status": "ok",
+        "service": "cam-generator",
+        "version": "2.0.0",
+        "ai_configured": bool(GEMINI_KEY),
+        "xlsx_available": HAS_OPENPYXL,
     }
 
-    for c_name, c_detail in five_cs.items():
-        doc.add_heading(c_name, level=2)
-        doc.add_paragraph(c_detail)
 
-    # Risk Drivers
-    doc.add_heading("3. Risk Factor Analysis", level=1)
-    drivers = risk.get("drivers", [])
-    if drivers:
-        table = doc.add_table(rows=1, cols=3)
-        table.style = "Table Grid"
-        hdr = table.rows[0].cells
-        hdr[0].text = "Factor"
-        hdr[1].text = "Impact"
-        hdr[2].text = "Reason"
-        for d in drivers:
-            row = table.add_row().cells
-            row[0].text = str(d.get("factor", ""))
-            impact = d.get("impact", 0)
-            row[1].text = f"+{impact}" if impact > 0 else str(impact)
-            row[2].text = str(d.get("reason", ""))
+@app.post("/generate")
+async def generate_cam(request: Request):
+    """Generate a Credit Appraisal Memo (DOCX)."""
+    data = await request.json()
+
+    company_name = data.get("companyName", "Unknown Company")
+    financials = data.get("extractedData", {})
+    research = data.get("researchFindings", {})
+    risk_score = data.get("riskScore")
+    risk_details = data.get("riskDetails", {})
+
+    doc = Document()
+    style = doc.styles['Normal']
+    font = style.font
+    font.name = 'Calibri'
+    font.size = Pt(11)
+
+    # ── Title ─────────────────────────────────────────
+    title = doc.add_heading('Credit Appraisal Memorandum', level=0)
+    title.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+    doc.add_paragraph(f"Company: {company_name}")
+    doc.add_paragraph(f"Date: {datetime.now().strftime('%d-%b-%Y')}")
+    doc.add_paragraph(f"Generated by: Intelli-Credit AI v2.0")
+    doc.add_paragraph("─" * 60)
+
+    # ── Executive Summary ─────────────────────────────
+    doc.add_heading('1. Executive Summary', level=1)
+    grade = risk_details.get("grade", "N/A")
+    decision = risk_details.get("decision", "N/A")
+    doc.add_paragraph(f"Risk Score: {risk_score or 'N/A'}/100")
+    doc.add_paragraph(f"Grade: {grade}")
+    doc.add_paragraph(f"Decision: {decision}")
+
+    # ── Financial Summary ─────────────────────────────
+    doc.add_heading('2. Financial Highlights', level=1)
+    fin = financials.get("financials", financials)
+    table = doc.add_table(rows=1, cols=2)
+    table.style = 'Light Grid Accent 1'
+    hdr = table.rows[0].cells
+    hdr[0].text = 'Metric'
+    hdr[1].text = 'Value'
+
+    metrics = [
+        ("Revenue", fin.get("revenue")),
+        ("EBITDA", fin.get("ebitda")),
+        ("PAT", fin.get("pat")),
+        ("Net Worth", fin.get("netWorth")),
+        ("Total Assets", fin.get("totalAssets")),
+        ("Total Debt", fin.get("totalDebt")),
+    ]
+    for name, val in metrics:
+        row = table.add_row().cells
+        row[0].text = name
+        row[1].text = f"₹{val:,.0f}" if val else "N/A"
+
+    # ── Ratios ────────────────────────────────────────
+    doc.add_heading('3. Key Ratios', level=1)
+    ratios = financials.get("ratios", {})
+    ratio_table = doc.add_table(rows=1, cols=2)
+    ratio_table.style = 'Light Grid Accent 1'
+    ratio_table.rows[0].cells[0].text = 'Ratio'
+    ratio_table.rows[0].cells[1].text = 'Value'
+    for rname in ["debtEquity", "currentRatio", "dscr", "interestCoverage", "netProfitMargin", "returnOnEquity"]:
+        rv = ratios.get(rname)
+        row = ratio_table.add_row().cells
+        row[0].text = rname
+        row[1].text = f"{rv:.2f}" if rv is not None else "N/A"
+
+    # ── Risk Assessment ───────────────────────────────
+    doc.add_heading('4. Risk Assessment', level=1)
+    drivers = risk_details.get("drivers", risk_details.get("reasoning_breakdown", []))
+    for d in drivers[:12]:
+        name = d.get("factor", d.get("factor_name", ""))
+        impact = d.get("impact", d.get("weighted_contribution", ""))
+        reason = d.get("reason", d.get("reasoning", ""))
+        doc.add_paragraph(f"• {name} (impact: {impact}): {reason}")
+
+    # ── Research ──────────────────────────────────────
+    doc.add_heading('5. Secondary Research', level=1)
+    tracks = research.get("tracks", {})
+    if tracks:
+        for track_name, track_data in tracks.items():
+            doc.add_heading(track_name, level=2)
+            for finding in track_data.get("findings", [])[:3]:
+                doc.add_paragraph(f"• {finding.get('title', '')} ({finding.get('source', '')})")
     else:
-        doc.add_paragraph("No detailed drivers available — stub analysis.")
+        news = research.get("newsHits", [])
+        for n in news[:5]:
+            title_text = n.get("title", "") if isinstance(n, dict) else str(n)
+            doc.add_paragraph(f"• {title_text}")
 
-    # Recommended Terms
-    doc.add_heading("4. Recommended Terms", level=1)
-    doc.add_paragraph(f"Recommended Credit Limit: ₹{risk.get('recommendedLimit', 'N/A'):,}" if isinstance(risk.get("recommendedLimit"), (int, float)) else f"Recommended Credit Limit: {risk.get('recommendedLimit', 'N/A')}")
-    doc.add_paragraph(f"Suggested Interest Rate: {risk.get('suggestedInterestRate', 'N/A')}")
+    # ── Recommendation ────────────────────────────────
+    doc.add_heading('6. Recommendation', level=1)
+    limit = risk_details.get("recommendedLimit", "N/A")
+    rate = risk_details.get("suggestedInterestRate", "N/A")
+    doc.add_paragraph(f"Decision: {decision}")
+    doc.add_paragraph(f"Recommended Limit: ₹{limit:,.0f}" if isinstance(limit, (int, float)) else f"Recommended Limit: {limit}")
+    doc.add_paragraph(f"Suggested Interest Rate: {rate}")
 
-    # Disclaimer
-    doc.add_heading("5. Disclaimer", level=1)
-    doc.add_paragraph(
-        "This Credit Appraisal Memo is generated by the Intelli-Credit AI Engine (Phase 1 — Stub). "
-        "The analysis is based on mock data and should not be used for actual credit decisions. "
-        "Final credit approval must follow the bank's standard underwriting process."
-    )
-
-    # Save
-    os.makedirs("output", exist_ok=True)
-    filename = f"CAM_{company_name.replace(' ', '_')}.docx"
-    filepath = os.path.join("output", filename)
+    # ── Save ──────────────────────────────────────────
+    safe_name = "".join(c for c in company_name if c.isalnum() or c in " _-").strip()
+    filepath = os.path.join(OUTPUT_DIR, f"CAM_{safe_name}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.docx")
     doc.save(filepath)
 
     return {
-        "camUrl": f"/static/{filename}",
+        "status": "generated",
+        "filePath": filepath,
+        "downloadUrl": f"/static/reports/{os.path.basename(filepath)}",
+        "company": company_name,
         "summary": {
-            "fiveCs": {
-                "character": "Stable — clean promoter history",
-                "capacity": "Adequate — DSCR 1.85x",
-                "capital": "Moderate — net worth ₹4Cr",
-                "collateral": "Partial — primary security offered",
-                "conditions": "Watchlist — sector under review",
-            },
-            "recommendation": "PROVISIONAL APPROVAL — final decision pending full risk engine integration",
+            "riskScore": risk_score,
+            "grade": grade,
+            "decision": decision,
+            "recommendedLimit": limit,
         },
     }
+
+
+@app.post("/generate-swot")
+async def generate_swot(request: Request):
+    """Generate SWOT analysis using Gemini or heuristic fallback."""
+    data = await request.json()
+
+    company_name = data.get("company_name", data.get("companyName", "Company"))
+    sector = data.get("sector", "")
+    financials = data.get("extracted_financials", data.get("extractedData", {}))
+    research = data.get("research_findings", data.get("researchFindings", {}))
+    risk_scores = data.get("risk_scores", data.get("riskDetails", {}))
+    loan_details = data.get("loan_details", data.get("loanDetails", {}))
+
+    if GEMINI_KEY:
+        fin_summary = json.dumps({k: v for k, v in financials.items() if not isinstance(v, list)}, default=str)[:2000]
+        prompt = f"""You are a senior credit analyst. Generate a data-backed SWOT analysis for:
+
+Company: {company_name}
+Sector: {sector}
+Financial Summary: {fin_summary}
+Risk Score: {risk_scores.get('score', 'N/A')}/{risk_scores.get('grade', 'N/A')}
+Loan Request: {json.dumps(loan_details, default=str)[:500]}
+
+Every point must cite a specific number from the data. No generic statements.
+Max 4 points per quadrant.
+
+Return JSON only in this exact format:
+{{
+  "strengths": [{{"point": "...", "data_ref": "..."}}],
+  "weaknesses": [{{"point": "...", "data_ref": "..."}}],
+  "opportunities": [{{"point": "...", "data_ref": "..."}}],
+  "threats": [{{"point": "...", "data_ref": "..."}}]
+}}"""
+        result = call_ai_json(prompt)
+        if result and "strengths" in result:
+            return {"status": "generated", "swot": result, "company": company_name, "source": "gemini"}
+
+    # Heuristic SWOT fallback
+    fin = financials.get("financials", financials)
+    revenue = fin.get("revenue", 0) or 0
+    pat = fin.get("pat", 0) or 0
+    dscr = fin.get("dscr", 0) or financials.get("ratios", {}).get("dscr", 0) or 0
+    de_ratio = financials.get("ratios", {}).get("debtEquity", 0) or 0
+
+    swot = {
+        "strengths": [
+            {"point": f"Revenue of ₹{revenue/10000000:.1f}Cr indicates strong market presence", "data_ref": f"Revenue: ₹{revenue:,.0f}"},
+        ] if revenue > 0 else [{"point": "Company is operational with established business", "data_ref": "Active entity"}],
+        "weaknesses": [],
+        "opportunities": [
+            {"point": f"Sector ({sector or 'industry'}) has positive growth outlook for FY25-26", "data_ref": "Sector research"},
+        ],
+        "threats": [
+            {"point": "Regulatory changes in lending norms may impact operations", "data_ref": "RBI guidelines 2025"},
+        ],
+    }
+
+    if pat > 0:
+        swot["strengths"].append({"point": f"Profitable entity with PAT of ₹{pat/10000000:.1f}Cr", "data_ref": f"PAT: ₹{pat:,.0f}"})
+    else:
+        swot["weaknesses"].append({"point": f"Entity reporting losses (PAT: ₹{pat/10000000:.1f}Cr)", "data_ref": f"PAT: ₹{pat:,.0f}"})
+
+    if dscr and dscr > 1.5:
+        swot["strengths"].append({"point": f"Strong DSCR of {dscr:.1f}x indicates robust debt servicing", "data_ref": f"DSCR: {dscr:.2f}x"})
+    elif dscr and dscr < 1.0:
+        swot["weaknesses"].append({"point": f"DSCR below 1.0x at {dscr:.2f}x — debt servicing strain", "data_ref": f"DSCR: {dscr:.2f}x"})
+
+    if de_ratio and de_ratio > 3:
+        swot["weaknesses"].append({"point": f"High leverage with D/E ratio of {de_ratio:.1f}x", "data_ref": f"D/E Ratio: {de_ratio:.2f}x"})
+
+    return {"status": "generated", "swot": swot, "company": company_name, "source": "heuristic"}
+
+
+@app.post("/generate-xlsx")
+async def generate_xlsx(request: Request):
+    """Export extracted data to XLSX workbook."""
+    if not HAS_OPENPYXL:
+        return {"error": "openpyxl not installed — cannot generate XLSX"}
+
+    data = await request.json()
+    company_name = data.get("company_name", data.get("companyName", "Company"))
+    documents = data.get("documents", [])
+    risk_scores = data.get("risk_scores", data.get("riskDetails", {}))
+    swot = data.get("swot", {})
+
+    wb = Workbook()
+
+    # ── Summary Sheet ─────────────────────────────
+    ws = wb.active
+    ws.title = "Summary"
+    header_fill = PatternFill(start_color="1e3a5f", end_color="1e3a5f", fill_type="solid")
+    header_font = Font(name="Calibri", size=11, bold=True, color="FFFFFF")
+
+    ws["A1"] = "Entity"
+    ws["B1"] = company_name
+    ws["A2"] = "Risk Score"
+    ws["B2"] = risk_scores.get("score", "N/A")
+    ws["A3"] = "Grade"
+    ws["B3"] = risk_scores.get("grade", "N/A")
+    ws["A4"] = "Decision"
+    ws["B4"] = risk_scores.get("decision", "N/A")
+    ws["A5"] = "Generated"
+    ws["B5"] = datetime.now().strftime("%Y-%m-%d %H:%M")
+
+    for row in ws.iter_rows(min_row=1, max_row=5, max_col=2):
+        for cell in row:
+            cell.font = Font(name="Calibri", size=11, bold=(cell.column == 1))
+
+    # ── Document Sheets ───────────────────────────
+    for doc in documents[:10]:
+        doc_type = doc.get("type", doc.get("slotKey", "Data"))
+        safe_title = doc_type[:31]  # Excel sheet name limit
+        ws_doc = wb.create_sheet(title=safe_title)
+
+        # Header
+        ws_doc["A1"] = "Field"
+        ws_doc["B1"] = "Value"
+        ws_doc["C1"] = "Confidence"
+        for cell in [ws_doc["A1"], ws_doc["B1"], ws_doc["C1"]]:
+            cell.fill = header_fill
+            cell.font = header_font
+
+        extracted = doc.get("extractedData", {})
+        row_num = 2
+        for field_name, field_data in extracted.items():
+            ws_doc[f"A{row_num}"] = field_name
+            if isinstance(field_data, dict):
+                ws_doc[f"B{row_num}"] = str(field_data.get("value", ""))
+                ws_doc[f"C{row_num}"] = f"{field_data.get('confidence', '')}%"
+            else:
+                ws_doc[f"B{row_num}"] = str(field_data)
+            row_num += 1
+
+        ws_doc.column_dimensions["A"].width = 30
+        ws_doc.column_dimensions["B"].width = 25
+        ws_doc.column_dimensions["C"].width = 15
+
+    # ── SWOT Sheet ────────────────────────────────
+    if swot:
+        ws_swot = wb.create_sheet(title="SWOT")
+        colors = {"strengths": "28a745", "weaknesses": "dc3545", "opportunities": "007bff", "threats": "fd7e14"}
+        row_num = 1
+
+        for quadrant, items in swot.items():
+            color = colors.get(quadrant, "000000")
+            ws_swot[f"A{row_num}"] = quadrant.upper()
+            ws_swot[f"A{row_num}"].font = Font(bold=True, size=12, color=color)
+            row_num += 1
+            for item in (items or []):
+                point = item.get("point", str(item)) if isinstance(item, dict) else str(item)
+                ref = item.get("data_ref", "") if isinstance(item, dict) else ""
+                ws_swot[f"A{row_num}"] = f"• {point}"
+                ws_swot[f"B{row_num}"] = ref
+                row_num += 1
+            row_num += 1
+
+        ws_swot.column_dimensions["A"].width = 60
+        ws_swot.column_dimensions["B"].width = 30
+
+    # ── Save and stream ───────────────────────────
+    buffer = io.BytesIO()
+    wb.save(buffer)
+    buffer.seek(0)
+
+    filename = f"IntelliCredit_{company_name.replace(' ', '_')}_Data.xlsx"
+    return StreamingResponse(
+        buffer,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
+
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8004)

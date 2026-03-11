@@ -11,7 +11,7 @@ const FormData = require('form-data');
 const createClient = (baseURL) => {
 	return axios.create({
 		baseURL,
-		timeout: 15000,
+		timeout: 30000,
 	});
 };
 
@@ -31,6 +31,11 @@ const extractionClient = createClient(env.EXTRACTION_SERVICE_URL);
 const researchClient = createClient(env.RESEARCH_AGENT_URL);
 const riskClient = createClient(env.RISK_ENGINE_URL);
 const camClient = createClient(env.CAM_GENERATOR_URL);
+
+const _headers = (requestId, analysisId) => ({
+	'x-request-id': requestId || '',
+	'x-analysis-id': analysisId || '',
+});
 
 /**
  * Call extraction service
@@ -62,13 +67,59 @@ const callExtraction = async (files, requestId) => {
 };
 
 /**
+ * Call classify endpoint on extraction service
+ */
+const callClassify = async (file, analysisId, requestId) => {
+	return withRetry(async () => {
+		const form = new FormData();
+		form.append('file', fs.createReadStream(file.path), {
+			filename: file.originalname,
+			contentType: file.mimetype,
+		});
+		form.append('analysis_id', analysisId || '');
+
+		const response = await extractionClient.post('/classify', form, {
+			headers: {
+				...form.getHeaders(),
+				..._headers(requestId, analysisId),
+			},
+		});
+		return response.data;
+	});
+};
+
+/**
+ * Call schema-aware extraction
+ */
+const callSchemaExtraction = async (file, schema, analysisId, requestId) => {
+	return withRetry(async () => {
+		const form = new FormData();
+		form.append('file', fs.createReadStream(file.path), {
+			filename: file.originalname,
+			contentType: file.mimetype,
+		});
+		form.append('schema', JSON.stringify(schema));
+		form.append('analysis_id', analysisId || '');
+
+		const response = await extractionClient.post('/extract', form, {
+			headers: {
+				...form.getHeaders(),
+				..._headers(requestId, analysisId),
+			},
+			timeout: 60000,
+		});
+		return response.data;
+	});
+};
+
+/**
  * Call research agent
  */
-const callResearch = async (companyName, gstin, requestId) => {
+const callResearch = async (companyName, gstin, requestId, sector) => {
 	return withRetry(async () => {
 		const response = await researchClient.post('/research', {
 			companyName,
-			sector: '', // Optional parameters as per Phase 3 definition
+			sector: sector || '',
 			gstin: gstin || '',
 		}, {
 			headers: { 'x-request-id': requestId || '' },
@@ -90,6 +141,18 @@ const callRisk = async (payload, requestId) => {
 };
 
 /**
+ * Call triangulation endpoint on risk engine
+ */
+const callTriangulate = async (payload, requestId) => {
+	return withRetry(async () => {
+		const response = await riskClient.post('/triangulate', payload, {
+			headers: { 'x-request-id': requestId || '' },
+		});
+		return response.data;
+	});
+};
+
+/**
  * Call CAM generator
  */
 const callCAM = async (payload, requestId) => {
@@ -98,6 +161,31 @@ const callCAM = async (payload, requestId) => {
 			headers: { 'x-request-id': requestId || '' },
 		});
 		return response.data;
+	});
+};
+
+/**
+ * Call SWOT generator
+ */
+const callSwot = async (payload, requestId) => {
+	return withRetry(async () => {
+		const response = await camClient.post('/generate-swot', payload, {
+			headers: { 'x-request-id': requestId || '' },
+		});
+		return response.data;
+	});
+};
+
+/**
+ * Call XLSX export
+ */
+const callXlsx = async (payload, requestId) => {
+	return withRetry(async () => {
+		const response = await camClient.post('/generate-xlsx', payload, {
+			headers: { 'x-request-id': requestId || '' },
+			responseType: 'stream',
+		});
+		return response;
 	});
 };
 
@@ -127,8 +215,14 @@ const checkAllHealth = async () => {
 
 module.exports = {
 	callExtraction,
+	callClassify,
+	callSchemaExtraction,
 	callResearch,
 	callRisk,
+	callTriangulate,
 	callCAM,
+	callSwot,
+	callXlsx,
+	callGenerateXlsx: callXlsx, // alias used by reportController
 	checkAllHealth,
 };

@@ -71,6 +71,8 @@ services:
     container_name: intelli-credit-extraction
     ports:
       - "8001:8001"
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
     networks:
       - intelli_network
     restart: unless-stopped
@@ -115,6 +117,8 @@ services:
       - "8004:8004"
     volumes:
       - cam_output:/app/output
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
     networks:
       - intelli_network
     restart: unless-stopped

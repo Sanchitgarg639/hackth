@@ -12,6 +12,18 @@ export const CreditProvider = ({ children }) => {
 	const [extractedData, setExtractedData] = useState(null);
 	const [riskData, setRiskData] = useState(null);
 	const [camSummary, setCamSummary] = useState(null);
+	// Stage 1: Onboarding
+	const [entityDetails, setEntityDetails] = useState(null);
+	const [loanDetails, setLoanDetails] = useState(null);
+	// Stage 2 & 3: Documents
+	const [documents, setDocuments] = useState([]);
+	const [classificationResults, setClassificationResults] = useState({});
+	const [schemas, setSchemas] = useState({});
+	// Stage 4: Analysis results
+	const [triangulationResults, setTriangulationResults] = useState(null);
+	const [swotAnalysis, setSwotAnalysis] = useState(null);
+	const [reasoningBreakdown, setReasoningBreakdown] = useState(null);
+	const [researchTracks, setResearchTracks] = useState(null);
 
 	const reset = () => {
 		setCompanyId(null);
@@ -21,6 +33,15 @@ export const CreditProvider = ({ children }) => {
 		setExtractedData(null);
 		setRiskData(null);
 		setCamSummary(null);
+		setEntityDetails(null);
+		setLoanDetails(null);
+		setDocuments([]);
+		setClassificationResults({});
+		setSchemas({});
+		setTriangulationResults(null);
+		setSwotAnalysis(null);
+		setReasoningBreakdown(null);
+		setResearchTracks(null);
 	};
 
 	const value = {
@@ -31,6 +52,15 @@ export const CreditProvider = ({ children }) => {
 		extractedData, setExtractedData,
 		riskData, setRiskData,
 		camSummary, setCamSummary,
+		entityDetails, setEntityDetails,
+		loanDetails, setLoanDetails,
+		documents, setDocuments,
+		classificationResults, setClassificationResults,
+		schemas, setSchemas,
+		triangulationResults, setTriangulationResults,
+		swotAnalysis, setSwotAnalysis,
+		reasoningBreakdown, setReasoningBreakdown,
+		researchTracks, setResearchTracks,
 		reset,
 	};
 

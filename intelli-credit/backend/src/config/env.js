@@ -8,6 +8,7 @@ module.exports = {
 	RISK_ENGINE_URL: process.env.RISK_ENGINE_URL || 'http://localhost:8003',
 	CAM_GENERATOR_URL: process.env.CAM_GENERATOR_URL || 'http://localhost:8004',
 	JWT_SECRET: process.env.JWT_SECRET || 'dev-secret',
-	MAX_UPLOAD_SIZE: parseInt(process.env.MAX_UPLOAD_SIZE) || 20 * 1024 * 1024, // 20MB
+	MAX_UPLOAD_SIZE: parseInt(process.env.MAX_UPLOAD_SIZE) || 25 * 1024 * 1024, // 25MB
 	FRONTEND_ORIGIN: process.env.FRONTEND_ORIGIN || 'http://localhost:5173',
+	GEMINI_API_KEY: process.env.GEMINI_API_KEY || '',
 };

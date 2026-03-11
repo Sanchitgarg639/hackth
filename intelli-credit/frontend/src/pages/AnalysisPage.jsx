@@ -15,7 +15,7 @@ const PIPELINE_STEPS = [
 ];
 
 export default function AnalysisPage() {
-	const { companyId, fileId, analysisId, setAnalysisId, analysisStatus, setAnalysisStatus, extractedData, setExtractedData, setRiskData, setCamSummary } = useCredit();
+	const { companyId, fileId, analysisId, setAnalysisId, analysisStatus, setAnalysisStatus, extractedData, setExtractedData, setRiskData, setCamSummary, setTriangulationResults, setSwotAnalysis, setReasoningBreakdown, setResearchTracks } = useCredit();
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState('');
 	const [analysisData, setAnalysisData] = useState(null);
@@ -23,19 +23,28 @@ export default function AnalysisPage() {
 	const pollRef = useRef(null);
 	const navigate = useNavigate();
 
+	const startedRef = useRef(false);
+
 	useEffect(() => {
-		if (!companyId) navigate('/');
+		if (!companyId && !analysisId) { navigate('/'); return; }
+		// Auto-start pipeline if not already running
+		if (!analysisStatus && !startedRef.current) {
+			startedRef.current = true;
+			handleStartAnalysis();
+		}
 		return () => { if (pollRef.current) clearInterval(pollRef.current); };
-	}, [companyId, navigate]);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [companyId, analysisId]);
 
 	const handleStartAnalysis = async () => {
 		setLoading(true);
 		setError('');
 		try {
-			const res = await startAnalysis(fileId, companyId);
-			setAnalysisId(res.data.analysisId);
+			const res = await startAnalysis(fileId, companyId, analysisId);
+			const retId = res.data.analysisId;
+			setAnalysisId(retId);
 			setAnalysisStatus('queued');
-			startPolling(res.data.analysisId);
+			startPolling(retId);
 		} catch (err) {
 			setError(err.response?.data?.error?.message || 'Failed to start analysis');
 		} finally {
@@ -55,11 +64,17 @@ export default function AnalysisPage() {
 					clearInterval(pollRef.current);
 					setRiskData(data.riskDetails);
 					setCamSummary(data.camSummary);
+					if (data.triangulationResults) setTriangulationResults(data.triangulationResults);
+					if (data.swotAnalysis) setSwotAnalysis(data.swotAnalysis);
+					if (data.reasoningBreakdown) setReasoningBreakdown(data.reasoningBreakdown);
+					if (data.researchFindings?.tracks) setResearchTracks(data.researchFindings.tracks);
+					// Auto-navigate to report after brief pause so user sees "Complete" step
+					setTimeout(() => navigate('/report'), 1500);
 				} else if (data.status === 'failed') {
 					clearInterval(pollRef.current);
 					setError('Analysis failed. Please try again.');
 				}
-			} catch {}
+			} catch { }
 		}, 3000);
 	};
 
@@ -289,8 +304,8 @@ export default function AnalysisPage() {
 
 		const bandColor = fin.cibilBand === 'Excellent' ? 'var(--success)'
 			: fin.cibilBand === 'Good' ? 'var(--success)'
-			: fin.cibilBand === 'Moderate' ? 'var(--warning)'
-			: 'var(--danger)';
+				: fin.cibilBand === 'Moderate' ? 'var(--warning)'
+					: 'var(--danger)';
 
 		return (
 			<div className="enterprise-card" style={{ marginTop: '24px' }}>
@@ -321,7 +336,7 @@ export default function AnalysisPage() {
 		);
 	};
 
-	if (!companyId) return null;
+	if (!companyId && !analysisId) return null;
 
 	return (
 		<div className="fade-in">
