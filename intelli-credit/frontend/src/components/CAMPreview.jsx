@@ -4,6 +4,13 @@ export default function CAMPreview({ report, generatingDoc, handleGenerateDoc })
 	const risk = report?.riskDetails || {};
 	const summary = report?.summary || {};
 	const fiveCs = summary.fiveCs || {};
+	const companyName = report?.companyName || 'Company';
+	const riskScore = risk.score || 0;
+	const riskGrade = risk.grade || risk.Grade || 'N/A';
+	const riskDecision = risk.decision || risk.Decision || 'REVIEW';
+	const pd = risk.pd || 0;
+	const recLimit = risk.recommendedLimit;
+	const fmtLimit = recLimit ? `₹${(recLimit / 10000000).toFixed(2)} Cr` : (report?.extractedData?.financials?.totalDebt ? `₹${(report.extractedData.financials.totalDebt / 10000000).toFixed(2)} Cr` : '—');
 
 	return (
 		<div className="enterprise-card" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
@@ -28,16 +35,25 @@ export default function CAMPreview({ report, generatingDoc, handleGenerateDoc })
 					<p style={{ textAlign: 'center', fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '24px' }}>Draft Preview Mode</p>
 
 					<div style={{ marginBottom: '16px' }}>
-						<strong>Entity:</strong> {report?.companyName || 'Unknown'} <br/>
-						<strong>Requested Limit:</strong> INR {risk.recommendedLimit?.toLocaleString() || 0} <br/>
-						<strong>Recommendation:</strong> {risk.recommendation || 'Pending'} <br/>
+						<strong>Entity:</strong> {companyName} <br/>
+						<strong>Risk Score:</strong> {riskScore} / 100 <br/>
+						<strong>Grade:</strong> {riskGrade} <br/>
+						<strong>Decision:</strong>{' '}
+						<span style={{
+							padding: '2px 10px', borderRadius: '12px', fontWeight: 700, fontSize: '0.85rem',
+							background: riskDecision === 'APPROVE' ? 'var(--success)' : riskDecision === 'REJECT' ? 'var(--danger)' : 'var(--warning)',
+							color: '#fff',
+						}}>
+							{riskDecision}
+						</span> <br/>
+						<strong>Recommended Limit:</strong> {fmtLimit} <br/>
 					</div>
 
 					<div style={{ marginBottom: '16px', borderTop: '1px dashed var(--border-default)', paddingTop: '16px' }}>
 						<strong>1. Executive Summary</strong>
 						<p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '4px' }}>
-							The AI model assigns a Probability of Default of {((risk.pd || 0) * 100).toFixed(2)}%, equating to a {risk.grade || 'N/A'} rating. 
-							The exposure expected loss is INR {risk.expected_loss?.toLocaleString() || 0}.
+							The AI model assigns a Probability of Default of {(pd * 100).toFixed(2)}%, equating to a {riskGrade} rating.
+							{risk.suggestedInterestRate && <> Suggested interest rate band: {risk.suggestedInterestRate}.</>}
 						</p>
 					</div>
 
@@ -51,10 +67,19 @@ export default function CAMPreview({ report, generatingDoc, handleGenerateDoc })
 							<li><strong>Conditions:</strong> {fiveCs.conditions || 'Watchlist'}</li>
 						</ul>
 					</div>
+
+					{summary.recommendation && (
+						<div style={{ marginBottom: '16px', borderTop: '1px dashed var(--border-default)', paddingTop: '16px' }}>
+							<strong>3. Recommendation</strong>
+							<p style={{ fontSize: '0.9rem', color: 'var(--text-primary)', marginTop: '4px', fontWeight: 600 }}>
+								{summary.recommendation}
+							</p>
+						</div>
+					)}
 					
 					<div style={{ borderTop: '1px dashed var(--border-default)', paddingTop: '16px' }}>
 						<p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>
-							* Document automatically formatted via python-docx. Click Generate above to retrieve the finalized multi-page printable report with full ML SHAP audit trails.
+							* Click Generate above to download the full Credit Appraisal Memo with financial data, risk assessment, SWOT analysis, and audit trails.
 						</p>
 					</div>
 				</div>
