@@ -225,19 +225,63 @@ def generate_risk_assessment(payload: dict) -> dict:
     impact_order = {"+Risk": 0, "Neutral": 1, "+Strength": 2, "Excluded": 3}
     reasons.sort(key=lambda r: (impact_order.get(r["impact"], 1), -(r.get("weight") or 0)))
 
+    # Build reasoning_breakdown for the frontend ReasoningAccordion component
+    reasoning_breakdown = []
+    for key, display_name, base_weight, sub_score, raw_val in present_factors:
+        effective_weight = base_weight / total_present_weight
+        direction = "positive" if sub_score >= 70 else ("negative" if sub_score <= 30 else "neutral")
+        reasoning_breakdown.append({
+            "factor_name": display_name,
+            "weight_pct": round(effective_weight * 100, 1),
+            "raw_value": _format_feature_value(key, raw_val),
+            "score": round(sub_score),
+            "weighted_contribution": round(sub_score * effective_weight, 2),
+            "reasoning": f"{display_name}: {_format_feature_value(key, raw_val)} — sub-score {sub_score:.0f}/100",
+            "direction": direction,
+        })
+
+    # Build verdict summary for the frontend
+    top_for = [f["factor_name"] for f in reasoning_breakdown if f["direction"] == "positive"][:3]
+    top_against = [f["factor_name"] for f in reasoning_breakdown if f["direction"] == "negative"][:2]
+    verdict = {
+        "decision": recommendation,
+        "score": final_score,
+        "grade": grade,
+        "top_factors_for": top_for,
+        "top_factors_against": top_against,
+        "summary": f"Decision: {recommendation}. "
+                   + (f"Top strengths: {', '.join(top_for)}. " if top_for else "")
+                   + (f"Risk factors: {', '.join(top_against)}." if top_against else ""),
+    }
+
     logger.info(
         f"Risk score: {final_score}/100 | Grade: {grade} | PD: {pd_prob} | "
         f"Factors: {len(present_factors)} present, {len(missing_factors)} excluded"
     )
 
+    # Legacy drivers format for frontend 5Cs section visibility
+    drivers = [
+        {
+            "factor": entry["factor_name"],
+            "weight": entry["weight_pct"] / 100,
+            "impact": entry["weighted_contribution"],
+            "reason": entry["reasoning"],
+        }
+        for entry in reasoning_breakdown
+    ]
+
     return {
         "score": final_score,
         "pd": pd_prob,
         "grade": grade,
+        "decision": recommendation,
         "expected_loss": round(expected_loss, 2),
         "recommendation": recommendation,
         "recommendedLimit": requested_limit,
         "suggestedInterestRate": proposed_rate,
+        "reasoning_breakdown": reasoning_breakdown,
+        "verdict": verdict,
+        "drivers": drivers,
         "reasons": reasons,
         "features_used": features,
     }
