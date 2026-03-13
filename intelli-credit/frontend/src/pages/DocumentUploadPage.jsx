@@ -127,7 +127,7 @@ export default function DocumentUploadPage() {
 			)}
 
 			<div className="page-header">
-				<h2>📁 Document Upload</h2>
+				<h2>Document Upload</h2>
 				<p>Upload financial documents into the designated slots for AI-powered extraction</p>
 			</div>
 
@@ -153,13 +153,13 @@ export default function DocumentUploadPage() {
 										) : (
 											<span style={{ fontSize: '0.7rem', padding: '2px 8px', background: 'var(--bg-subtle)', color: 'var(--text-muted)', borderRadius: '12px' }}>Optional</span>
 										)}
-										{file && <span style={{ fontSize: '1.2rem' }}>✅</span>}
+										{file && <span style={{ fontSize: '0.75rem', padding: '2px 8px', borderRadius: '12px', background: 'var(--success-bg)', color: 'var(--success)', fontWeight: 600 }}>Uploaded</span>}
 									</div>
 									<p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-muted)' }}>{slot.desc}</p>
 
 									{file && (
 										<div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-											<span style={{ fontSize: '0.85rem', fontWeight: 600 }}>📎 {file.name}</span>
+											<span style={{ fontSize: '0.85rem', fontWeight: 600 }}>{file.name}</span>
 											<span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{(file.size / 1024 / 1024).toFixed(2)} MB</span>
 											{status === 'classifying' && <span style={{ fontSize: '0.8rem', color: 'var(--brand-primary)' }}>⟳ Classifying...</span>}
 											{classResult && (
@@ -182,7 +182,7 @@ export default function DocumentUploadPage() {
 										onChange={e => handleFileSelect(slot.key, e.target.files[0])} />
 									<button className="btn btn-secondary" style={{ padding: '8px 16px', fontSize: '0.85rem' }}
 										onClick={() => fileRefs.current[slot.key]?.click()}>
-										{file ? '🔄 Replace' : '📤 Upload'}
+										{file ? 'Replace' : 'Upload'}
 									</button>
 								</div>
 							</div>
@@ -194,7 +194,7 @@ export default function DocumentUploadPage() {
 			<div style={{ display: 'flex', gap: '16px', justifyContent: 'space-between' }}>
 				<button className="btn btn-secondary" onClick={handleDemoUpload} disabled={loading}
 					style={{ background: 'var(--brand-light)', borderColor: 'var(--brand-primary)', color: 'var(--brand-primary)' }}>
-					{loading ? '⏳ Loading...' : '⚡ Quick Demo (Pre-loaded Profile)'}
+					{loading ? '⏳ Loading...' : 'Quick Demo (Pre-loaded Profile)'}
 				</button>
 				<button className="btn btn-primary" onClick={handleProceed} disabled={!canProceed()}>
 					Proceed to Classification →

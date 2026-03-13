@@ -87,7 +87,7 @@ export default function ResearchSection() {
 			<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
 				<div>
 					<h3 style={{ fontSize: '1.25rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
-						🌐 AI Research Agent 
+						AI Research Agent 
 					</h3>
 					<p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginTop: '4px' }}>
 						Auto-scans news, court records, and regulatory notices for risk footprint.
@@ -96,7 +96,7 @@ export default function ResearchSection() {
                 
 				{findings.length === 0 && (
 					<button className="btn btn-primary" onClick={handleStartResearch} disabled={loading}>
-						{loading ? '⏳ Scanning WWW...' : '🔍 Run Research'}
+						{loading ? '⏳ Scanning WWW...' : ' Run Research'}
 					</button>
 				)}
 			</div>
@@ -134,7 +134,7 @@ export default function ResearchSection() {
 						</div>
 					</div>
 
-					<h4 style={{ fontSize: '1rem', marginBottom: '16px', paddingBottom: '8px', borderBottom: '1px solid var(--border)' }}>📰 News & Regulatory Scans</h4>
+					<h4 style={{ fontSize: '1rem', marginBottom: '16px', paddingBottom: '8px', borderBottom: '1px solid var(--border)' }}>News & Regulatory Scans</h4>
 					<div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
 						{findings.map((f, i) => (
 							<div key={i} style={{ 
@@ -154,8 +154,8 @@ export default function ResearchSection() {
 									</span>
 								</div>
 								<div style={{ display: 'flex', gap: '12px', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-									<span>🏢 {f.source}</span>
-									<span>📅 {new Date(f.publishedDate).toLocaleDateString()}</span>
+									<span>{f.source}</span>
+									<span>{new Date(f.publishedDate).toLocaleDateString()}</span>
 								</div>
 								
 								{f.riskTags && f.riskTags.length > 0 && (
@@ -178,7 +178,7 @@ export default function ResearchSection() {
 					{findings.length > 0 && (
 						<div style={{ textAlign: 'center', marginTop: '16px' }}>
 							<button className="btn btn-secondary" onClick={handleStartResearch} disabled={loading}>
-								{loading ? '⏳ Refreshing...' : '⟳ Refresh Research'}
+								{loading ? 'Refreshing...' : 'Refresh Research'}
 							</button>
 						</div>
 					)}
@@ -186,7 +186,7 @@ export default function ResearchSection() {
 			)}
 
 			<div style={{ paddingTop: '24px', borderTop: '1px solid var(--border-default)' }}>
-				<h4 style={{ fontSize: '1rem', marginBottom: '16px' }}>✍ Credit Officer Qualitative Assessment</h4>
+				<h4 style={{ fontSize: '1rem', marginBottom: '16px' }}>Credit Officer Qualitative Assessment</h4>
 				
 				<div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 250px', gap: '24px' }}>
 					<div>
@@ -232,7 +232,7 @@ export default function ResearchSection() {
 							onClick={handleSaveQualitative}
 							disabled={!notes}
 						>
-							{isSaved ? '✓ Saved Successfully' : '💾 Save Assessment'}
+							{isSaved ? 'Saved' : 'Save Assessment'}
 						</button>
 					</div>
 				</div>

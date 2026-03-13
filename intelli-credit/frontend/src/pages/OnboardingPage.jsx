@@ -128,7 +128,7 @@ export default function OnboardingPage() {
 			)}
 
 			<div className="page-header">
-				<h2>🏢 Entity Onboarding</h2>
+				<h2>Entity Onboarding</h2>
 				<p>Provide company and loan details to begin the credit appraisal process</p>
 			</div>
 
@@ -156,7 +156,7 @@ export default function OnboardingPage() {
 			{/* Step 1: Entity Details */}
 			{step === 1 && (
 				<div className="enterprise-card">
-					<h3 style={{ marginBottom: '20px', fontSize: '1.1rem', fontWeight: 600 }}>📋 Entity Details</h3>
+					<h3 style={{ marginBottom: '20px', fontSize: '1.1rem', fontWeight: 600 }}>Entity Details</h3>
 					<div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '16px' }}>
 						{renderInput('Company Name', 'companyName', entity, handleEntityChange, 'text', { required: true, placeholder: 'e.g., Tata Steel Ltd' })}
 						{renderInput('CIN (Corporate Identification Number)', 'cin', entity, handleEntityChange, 'text', { placeholder: 'e.g., L12345MH2000PLC123456' })}
@@ -176,7 +176,7 @@ export default function OnboardingPage() {
 			{/* Step 2: Loan Details */}
 			{step === 2 && (
 				<div className="enterprise-card">
-					<h3 style={{ marginBottom: '20px', fontSize: '1.1rem', fontWeight: 600 }}>💰 Loan Details</h3>
+					<h3 style={{ marginBottom: '20px', fontSize: '1.1rem', fontWeight: 600 }}>Loan Details</h3>
 					<div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '16px' }}>
 						{renderInput('Loan Type', 'loanType', loan, handleLoanChange, 'select', { required: true, options: LOAN_TYPES })}
 						{renderInput('Loan Amount Requested (₹ Crores)', 'loanAmount', loan, handleLoanChange, 'number', { required: true, placeholder: '0', min: 0, step: 0.01 })}
@@ -195,7 +195,7 @@ export default function OnboardingPage() {
 			{/* Step 3: Review & Confirm */}
 			{step === 3 && (
 				<div className="enterprise-card">
-					<h3 style={{ marginBottom: '20px', fontSize: '1.1rem', fontWeight: 600 }}>✅ Review & Confirm</h3>
+					<h3 style={{ marginBottom: '20px', fontSize: '1.1rem', fontWeight: 600 }}>Review & Confirm</h3>
 					<div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
 						<div>
 							<h4 style={{ color: 'var(--brand-primary)', marginBottom: '12px' }}>Entity Details</h4>
@@ -238,7 +238,7 @@ export default function OnboardingPage() {
 						<button className="btn btn-secondary" onClick={() => setStep(2)}>← Edit</button>
 						<button className="btn btn-primary" onClick={handleSubmit} disabled={loading}
 							style={{ fontSize: '1rem', padding: '14px 28px' }}>
-							{loading ? '⏳ Creating...' : '🚀 Begin Analysis'}
+							{loading ? 'Creating...' : 'Begin Analysis'}
 						</button>
 					</div>
 				</div>

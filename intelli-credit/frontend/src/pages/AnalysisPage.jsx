@@ -6,12 +6,12 @@ import { formatCurrency, formatNumber } from '../utils/formatters';
 import ResearchSection from '../components/ResearchSection';
 
 const PIPELINE_STEPS = [
-	{ key: 'queued', label: 'Queued', icon: '📋', description: 'Analysis request received' },
-	{ key: 'extracting', label: 'Extracting Data', icon: '🔍', description: 'Parsing financial documents with OCR + regex' },
-	{ key: 'researching', label: 'Research Agent', icon: '🌐', description: 'Scanning news, litigation, regulatory sources' },
-	{ key: 'scoring', label: 'Risk Scoring', icon: '📊', description: 'Computing weighted risk factors' },
-	{ key: 'generating', label: 'Generating CAM', icon: '📝', description: 'Building Credit Appraisal Memo (DOCX)' },
-	{ key: 'complete', label: 'Complete', icon: '✅', description: 'Analysis finished' },
+	{ key: 'queued', label: 'Queued', description: 'Analysis request received' },
+	{ key: 'extracting', label: 'Extracting Data', description: 'Parsing financial documents with OCR + regex' },
+	{ key: 'researching', label: 'Research Agent', description: 'Scanning news, litigation, regulatory sources' },
+	{ key: 'scoring', label: 'Risk Scoring', description: 'Computing weighted risk factors' },
+	{ key: 'generating', label: 'Generating CAM', description: 'Building Credit Appraisal Memo (DOCX)' },
+	{ key: 'complete', label: 'Complete', description: 'Analysis finished' },
 ];
 
 export default function AnalysisPage() {
@@ -200,7 +200,7 @@ export default function AnalysisPage() {
 
 		return (
 			<div className="enterprise-card" style={{ marginTop: '24px' }}>
-				<h3 style={{ marginBottom: '16px', fontSize: '1rem', fontWeight: 600 }}>📋 Extracted Financial Data</h3>
+				<h3 style={{ marginBottom: '16px', fontSize: '1rem', fontWeight: 600 }}>Extracted Financial Data</h3>
 				<table className="data-table">
 					<thead><tr><th>Metric</th><th>Value</th></tr></thead>
 					<tbody>
@@ -212,7 +212,7 @@ export default function AnalysisPage() {
 
 				{ratioItems.length > 0 && (
 					<>
-						<h4 style={{ margin: '20px 0 12px', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>📐 Financial Ratios</h4>
+						<h4 style={{ margin: '20px 0 12px', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Financial Ratios</h4>
 						<table className="data-table">
 							<thead><tr><th>Ratio</th><th>Value</th><th>Status</th></tr></thead>
 							<tbody>
@@ -231,7 +231,7 @@ export default function AnalysisPage() {
 				{/* Key covenants */}
 				{extractedData.keyCovenants && extractedData.keyCovenants.length > 0 && (
 					<div style={{ marginTop: '16px' }}>
-						<h4 style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '8px' }}>📜 Key Covenants</h4>
+						<h4 style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '8px' }}>Key Covenants</h4>
 						<ul style={{ paddingLeft: '20px', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
 							{extractedData.keyCovenants.map((c, i) => <li key={i} style={{ marginBottom: '4px' }}>{c}</li>)}
 						</ul>
@@ -249,7 +249,7 @@ export default function AnalysisPage() {
 		return (
 			<div className="enterprise-card" style={{ marginTop: '24px', borderColor: 'var(--danger)', background: 'var(--danger-bg)' }}>
 				<h3 style={{ color: 'var(--danger)', marginBottom: '12px', fontSize: '1rem', fontWeight: 600 }}>
-					🚨 Audit Red Flags Detected ({flags.length})
+					Audit Red Flags Detected ({flags.length})
 				</h3>
 				{flags.map((f, i) => (
 					<div key={i} style={{
@@ -281,7 +281,7 @@ export default function AnalysisPage() {
 				marginTop: '24px',
 				borderColor: gst.circularTradingRisk ? 'var(--danger)' : 'var(--border-default)',
 			}}>
-				<h3 style={{ marginBottom: '16px', fontSize: '1rem', fontWeight: 600 }}>🧾 GST Analysis</h3>
+				<h3 style={{ marginBottom: '16px', fontSize: '1rem', fontWeight: 600 }}>GST Analysis</h3>
 				<table className="data-table">
 					<thead><tr><th>Metric</th><th>Value</th><th>Status</th></tr></thead>
 					<tbody>
@@ -336,7 +336,7 @@ export default function AnalysisPage() {
 				marginTop: '24px',
 				borderColor: isFlag ? 'var(--warning)' : 'var(--border-default)',
 			}}>
-				<h3 style={{ marginBottom: '16px', fontSize: '1rem', fontWeight: 600 }}>🔀 Cross-Verification (GST vs Bank)</h3>
+				<h3 style={{ marginBottom: '16px', fontSize: '1rem', fontWeight: 600 }}>Cross-Verification (GST vs Bank)</h3>
 				<div className="summary-grid" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
 					<div className="summary-card">
 						<div className="card-label">GST Turnover</div>
@@ -377,7 +377,7 @@ export default function AnalysisPage() {
 
 		return (
 			<div className="enterprise-card" style={{ marginTop: '24px' }}>
-				<h3 style={{ marginBottom: '16px', fontSize: '1rem', fontWeight: 600 }}>🏦 CIBIL Commercial Score</h3>
+				<h3 style={{ marginBottom: '16px', fontSize: '1rem', fontWeight: 600 }}>CIBIL Commercial Score</h3>
 				<div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
 					<div style={{
 						width: '80px', height: '80px', borderRadius: '50%',
@@ -421,7 +421,7 @@ export default function AnalysisPage() {
 						{PIPELINE_STEPS.map((step, i) => (
 							<div key={step.key} className={`pipeline-step ${getStepClass(i)}`}>
 								<div className="status-icon">
-									{getStepClass(i) === 'complete' ? '✓' : getStepClass(i) === 'active' ? '⟳' : step.icon}
+									{getStepClass(i) === 'complete' ? '✓' : getStepClass(i) === 'active' ? '⟳' : i + 1}
 								</div>
 								<div>
 									<div style={{ fontWeight: 600, fontSize: '0.9rem' }}>{step.label}</div>
@@ -441,7 +441,7 @@ export default function AnalysisPage() {
 						Documents uploaded. Click below to run the full AI analysis pipeline with real extraction.
 					</p>
 					<button className="btn btn-primary" onClick={triggerAndPoll} disabled={loading}>
-						{loading ? '⏳ Starting...' : '🚀 Start AI Analysis'}
+						{loading ? '⏳ Starting...' : 'Start AI Analysis'}
 					</button>
 				</div>
 			)}
@@ -465,12 +465,12 @@ export default function AnalysisPage() {
 			{/* Phase 4 Generate Risk Engine Model */}
 			{analysisStatus === 'complete' && (
 				<div className="enterprise-card" style={{ marginTop: '24px', textAlign: 'center', padding: '40px' }}>
-					<h3>🧠 ML Probability of Default Engine</h3>
+					<h3>ML Probability of Default Engine</h3>
 					<p style={{ color: 'var(--text-secondary)', marginBottom: '24px' }}>
 						All Financial and Intelligence data is ready. Click below to pipe these features into the XGBoost Risk engine.
 					</p>
 					<button className="btn btn-success" onClick={handleGenerateRisk} disabled={generatingRisk} style={{ fontSize: '1rem', padding: '16px 32px' }}>
-						{generatingRisk ? '⏳ Computing ML Probability...' : '📊 Generate Final Risk Profile'}
+						{generatingRisk ? '⏳ Computing ML Probability...' : 'Generate Final Risk Profile'}
 					</button>
 				</div>
 			)}

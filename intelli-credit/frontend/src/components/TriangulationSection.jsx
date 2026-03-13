@@ -12,7 +12,7 @@ export default function TriangulationSection({ triangulationResults }) {
 	return (
 		<div className="enterprise-card" style={{ marginBottom: '24px' }}>
 			<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-				<h3 style={{ margin: 0, fontSize: '1.1rem' }}>⚖️ Triangulation Alerts</h3>
+				<h3 style={{ margin: 0, fontSize: '1.1rem' }}>Triangulation Alerts</h3>
 				<div style={{ textAlign: 'right' }}>
 					<div style={{ fontSize: '1.6rem', fontWeight: 800, color: scoreColor }}>{overall_triangulation_score}</div>
 					<div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Consistency Score / 100</div>

@@ -119,7 +119,7 @@ export default function UploadPage() {
 			)}
 
 			<div className="page-header">
-				<h2>📄 Upload Financial Documents</h2>
+				<h2>Upload Financial Documents</h2>
 				<p>Upload annual reports, bank statements, or financial data for AI-powered credit analysis</p>
 			</div>
 
@@ -132,7 +132,7 @@ export default function UploadPage() {
 					onDrop={handleDrop}
 					onClick={() => fileInputRef.current?.click()}
 				>
-					<div className="icon">{files.length > 0 ? '📎' : '☁️'}</div>
+					<div className="icon" style={{ fontSize: '2rem', color: 'var(--text-muted)' }}>{files.length > 0 ? '✓' : '↑'}</div>
 					{files.length > 0 ? (
 						<div className="file-list" style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'center', marginBottom: '16px' }}>
 							{files.map((f, i) => (
@@ -197,10 +197,10 @@ export default function UploadPage() {
 
 				<div style={{ display: 'flex', gap: '16px', marginTop: '16px' }}>
 					<button type="submit" className="btn btn-primary" disabled={loading || files.length === 0 || !companyName}>
-						{loading ? '⏳ Processing...' : '🚀 Upload & Extract'}
+						{loading ? 'Processing...' : 'Upload & Extract'}
 					</button>
-					<button type="button" className="btn btn-secondary" onClick={handleDemoUpload} disabled={loading} style={{ background: 'var(--brand-light)', borderColor: 'var(--brand-primary)', color: 'var(--brand-primary)' }}>
-						⚡ Quick Demo (Pre-loaded Profile)
+					<button type="button" className="btn btn-secondary" onClick={handleDemoUpload} disabled={loading}>
+						Quick Demo
 					</button>
 				</div>
 			</form>

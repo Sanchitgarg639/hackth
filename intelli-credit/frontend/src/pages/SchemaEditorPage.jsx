@@ -129,7 +129,7 @@ export default function SchemaEditorPage() {
 	return (
 		<div className="fade-in">
 			<div className="page-header">
-				<h2>📝 Schema Editor</h2>
+				<h2>Schema Editor</h2>
 				<p>Define the data fields to extract from each document. Add, edit, or remove fields as needed.</p>
 			</div>
 
@@ -141,7 +141,7 @@ export default function SchemaEditorPage() {
 					<div key={doc.slotKey} className="enterprise-card" style={{ marginBottom: '24px' }}>
 						<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
 							<h3 style={{ margin: 0, fontSize: '1rem' }}>
-								📄 {doc.filename} <span style={{ color: 'var(--text-muted)', fontWeight: 400 }}>— {docType}</span>
+								{doc.filename} <span style={{ color: 'var(--text-muted)', fontWeight: 400 }}>— {docType}</span>
 							</h3>
 							<button className="btn btn-secondary" style={{ padding: '4px 12px', fontSize: '0.8rem' }}
 								onClick={() => resetSchema(doc.slotKey, docType)}>
@@ -205,7 +205,7 @@ export default function SchemaEditorPage() {
 			<div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '16px' }}>
 				<button className="btn btn-secondary" onClick={() => navigate('/classify')}>← Back</button>
 				<button className="btn btn-primary" onClick={handleConfirm} style={{ fontSize: '1rem', padding: '14px 28px' }}>
-					✅ Confirm Schema & Extract
+					Confirm & Extract
 				</button>
 			</div>
 		</div>

@@ -10,7 +10,7 @@ export default function ExplainabilityPanel({ reasons }) {
 			border: '1px solid var(--primary-glow)'
 		}}>
 			<div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px', borderBottom: '1px solid var(--border)', paddingBottom: '16px' }}>
-				<span style={{ fontSize: '1.5rem' }}>🧠</span>
+
 				<div>
 					<h3 style={{ fontSize: '1.2rem', fontWeight: 700, color: 'var(--primary-light)', margin: 0 }}>Decision Intelligence Panel</h3>
 					<p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: 0 }}>SHAP Explainability AI — Why the model arrived at this score</p>

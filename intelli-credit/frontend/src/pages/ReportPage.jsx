@@ -405,7 +405,7 @@ export default function ReportPage() {
 			)}
 
 			<div className="page-header">
-				<h2>📊 Credit Appraisal Report</h2>
+				<h2>Credit Appraisal Report</h2>
 				<p>Full analysis complete — all 4 stages processed</p>
 			</div>
 
@@ -415,9 +415,9 @@ export default function ReportPage() {
 					<div style={{ flex: 1, minWidth: '200px' }}>
 						<h3 style={{ margin: '0 0 4px', fontSize: '1.3rem' }}>{companyName}</h3>
 						<div style={{ color: 'var(--text-muted)', marginBottom: '12px' }}>
-							{entityDetails?.sector && <span style={{ marginRight: '12px' }}>🏭 {entityDetails.sector}</span>}
-							{loanDetails?.loanType && <span style={{ marginRight: '12px' }}>💼 {loanDetails.loanType}</span>}
-							{loanAsk !== '—' && <span>💰 Loan Ask: <strong>{loanAsk}</strong></span>}
+							{entityDetails?.sector && <span style={{ marginRight: '12px' }}>{entityDetails.sector}</span>}
+							{loanDetails?.loanType && <span style={{ marginRight: '12px' }}>{loanDetails.loanType}</span>}
+							{loanAsk !== '—' && <span>Loan Ask: <strong>{loanAsk}</strong></span>}
 						</div>
 						<div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
 							<div>
@@ -459,7 +459,7 @@ export default function ReportPage() {
 			{/* ── SECTION 4: 5Cs Risk Breakdown ────────────────────── */}
 			{(data.qualitativeAssessment || risk.drivers) && (
 				<div className="enterprise-card" style={{ marginBottom: '24px' }}>
-					<h3 style={{ margin: '0 0 16px', fontSize: '1.1rem' }}>🏅 5Cs Risk Breakdown</h3>
+					<h3 style={{ margin: '0 0 16px', fontSize: '1.1rem' }}>5Cs Risk Breakdown</h3>
 					<div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px' }}>
 						{[
 							{ label: 'Character', score: qualScore, desc: 'Management & governance' },
@@ -492,7 +492,7 @@ export default function ReportPage() {
 			{/* ── SECTION 7: Extracted Data Tables ─────────────────── */}
 			{extractedDocsList.length > 0 && (
 				<div className="enterprise-card" style={{ marginBottom: '24px' }}>
-					<h3 style={{ margin: '0 0 16px', fontSize: '1.1rem' }}>📂 Extracted Data Tables</h3>
+					<h3 style={{ margin: '0 0 16px', fontSize: '1.1rem' }}>Extracted Data Tables</h3>
 					{extractedDocsList.map((doc, i) => (
 						<div key={i} style={{ marginBottom: '12px' }}>
 							<button
@@ -503,7 +503,7 @@ export default function ReportPage() {
 								}}
 								onClick={() => setExpandedDoc(expandedDoc === i ? null : i)}
 							>
-								📄 {doc.type || doc.filename || `Document ${i + 1}`}  {expandedDoc === i ? '▲' : '▼'}
+								{doc.type || doc.filename || `Document ${i + 1}`}  {expandedDoc === i ? '▲' : '▼'}
 							</button>
 							{expandedDoc === i && (
 								<table className="data-table" style={{ width: '100%', marginTop: '4px' }}>
@@ -526,7 +526,7 @@ export default function ReportPage() {
 
 			{/* ── SECTION 8: Downloads ──────────────────────────────── */}
 			<div className="enterprise-card" style={{ marginBottom: '24px' }}>
-				<h3 style={{ margin: '0 0 16px', fontSize: '1.1rem' }}>📥 Downloads</h3>
+				<h3 style={{ margin: '0 0 16px', fontSize: '1.1rem' }}>Downloads</h3>
 				<div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
 					<button className="btn btn-primary" onClick={handleGenerateDoc} disabled={generatingDoc}
 						style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '12px 24px' }}>

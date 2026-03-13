@@ -16,7 +16,7 @@ export default function CAMPreview({ report, generatingDoc, handleGenerateDoc })
 		<div className="enterprise-card" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
 			<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '1px solid var(--border-default)', paddingBottom: '16px' }}>
 				<div>
-					<h3 style={{ fontSize: '1.2rem', fontWeight: 700, margin: 0 }}>📄 CAM Auto-Generator</h3>
+					<h3 style={{ fontSize: '1.2rem', fontWeight: 700, margin: 0 }}>CAM Auto-Generator</h3>
 					<p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: 0 }}>Instant Credit Appraisal Memo Export</p>
 				</div>
 				<button 
@@ -25,7 +25,7 @@ export default function CAMPreview({ report, generatingDoc, handleGenerateDoc })
 					disabled={generatingDoc}
 					style={{ padding: '8px 16px', fontSize: '0.9rem' }}
 				>
-					{generatingDoc ? '⏳ Writing...' : (report?.camUrl && report.camUrl !== '/static/sample-cam.pdf') ? '📥 Download .docx' : '📝 Generate DOCX'}
+					{generatingDoc ? 'Writing...' : (report?.camUrl && report.camUrl !== '/static/sample-cam.pdf') ? 'Download .docx' : '📝 Generate DOCX'}
 				</button>
 			</div>
 

@@ -1,10 +1,10 @@
 import { useState } from 'react';
 
 const TRACK_CONFIGS = {
-	'Company Research': { icon: '🏢', sentimentColor: (s) => s > 0.5 ? 'var(--success)' : s > 0.2 ? 'var(--warning)' : 'var(--danger)' },
-	'Sector Research': { icon: '📊', sentimentColor: (s) => s > 0.4 ? 'var(--success)' : 'var(--warning)' },
-	'Legal Research': { icon: '⚖️', sentimentColor: (s) => s > 0.5 ? 'var(--success)' : 'var(--danger)' },
-	'Market Sentiment': { icon: '📈', sentimentColor: (s) => s > 0.4 ? 'var(--success)' : s > 0.2 ? 'var(--warning)' : 'var(--danger)' },
+	'Company Research': { sentimentColor: (s) => s > 0.5 ? 'var(--success)' : s > 0.2 ? 'var(--warning)' : 'var(--danger)' },
+	'Sector Research': { sentimentColor: (s) => s > 0.4 ? 'var(--success)' : 'var(--warning)' },
+	'Legal Research': { sentimentColor: (s) => s > 0.5 ? 'var(--success)' : 'var(--danger)' },
+	'Market Sentiment': { sentimentColor: (s) => s > 0.4 ? 'var(--success)' : s > 0.2 ? 'var(--warning)' : 'var(--danger)' },
 };
 
 export default function ResearchTracksSummary({ researchFindings, researchTracks }) {
@@ -26,7 +26,7 @@ export default function ResearchTracksSummary({ researchFindings, researchTracks
 		if (news.length === 0) return null;
 		return (
 			<div className="enterprise-card" style={{ marginBottom: '24px' }}>
-				<h3 style={{ margin: '0 0 16px', fontSize: '1.1rem' }}>🔍 Secondary Research</h3>
+				<h3 style={{ margin: '0 0 16px', fontSize: '1.1rem' }}>Secondary Research</h3>
 				<div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
 					{news.slice(0, 5).map((n, i) => (
 						<div key={i} style={{ padding: '10px 14px', background: 'var(--bg-subtle)', borderRadius: 'var(--radius-sm)', fontSize: '0.85rem' }}>
@@ -40,11 +40,11 @@ export default function ResearchTracksSummary({ researchFindings, researchTracks
 
 	return (
 		<div className="enterprise-card" style={{ marginBottom: '24px' }}>
-			<h3 style={{ margin: '0 0 16px', fontSize: '1.1rem' }}>🔍 Secondary Research — 4 Parallel Tracks</h3>
+			<h3 style={{ margin: '0 0 16px', fontSize: '1.1rem' }}>Secondary Research — 4 Parallel Tracks</h3>
 
 			<div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '12px' }}>
 				{trackList.map((track, i) => {
-					const cfg = TRACK_CONFIGS[track.track_name] || { icon: '📋' };
+					const cfg = TRACK_CONFIGS[track.track_name] || {};
 					const sentiment = track.sentiment_score ?? 0;
 					const sentColor = cfg.sentimentColor ? cfg.sentimentColor(sentiment) : 'var(--text-muted)';
 					const isOpen = expanded === i;
@@ -64,7 +64,7 @@ export default function ResearchTracksSummary({ researchFindings, researchTracks
 								onClick={() => setExpanded(isOpen ? null : i)}
 							>
 								<div style={{ fontWeight: 600, fontSize: '0.9rem' }}>
-									{cfg.icon} {track.track_name}
+									{track.track_name}
 								</div>
 								<div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
 									<span style={{
@@ -82,7 +82,7 @@ export default function ResearchTracksSummary({ researchFindings, researchTracks
 								<div style={{ padding: '4px 14px', display: 'flex', gap: '6px', flexWrap: 'wrap', background: '#fde8e8' }}>
 									{track.risk_tags.map(tag => (
 										<span key={tag} style={{ fontSize: '0.7rem', padding: '1px 6px', borderRadius: '10px', background: 'var(--danger)', color: '#fff', fontWeight: 600 }}>
-											⚑ {tag}
+											{tag}
 										</span>
 									))}
 								</div>
@@ -108,7 +108,7 @@ export default function ResearchTracksSummary({ researchFindings, researchTracks
 										}}>
 											<div style={{ fontWeight: 600, marginBottom: '2px' }}>{f.title}</div>
 											<div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-muted)' }}>
-												<span>📰 {f.source}</span>
+												<span>{f.source}</span>
 												<span style={{
 													padding: '1px 6px', borderRadius: '10px', fontSize: '0.7rem',
 													background: f.sentiment === 'positive' ? '#e6f9e9' : f.sentiment === 'negative' ? '#fde8e8' : 'var(--bg-subtle)',

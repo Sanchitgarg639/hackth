@@ -67,7 +67,7 @@ export default function ClassificationReviewPage() {
 	return (
 		<div className="fade-in">
 			<div className="page-header">
-				<h2>🔍 Classification Review</h2>
+				<h2>Classification Review</h2>
 				<p>Review AI document classifications. Override incorrect predictions before extraction.</p>
 			</div>
 
@@ -87,7 +87,7 @@ export default function ClassificationReviewPage() {
 							<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px' }}>
 								<div style={{ flex: 1, minWidth: '200px' }}>
 									<div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-										<span style={{ fontWeight: 700, fontSize: '1rem' }}>📄 {doc.filename}</span>
+										<span style={{ fontWeight: 700, fontSize: '1rem' }}>{doc.filename}</span>
 										<span style={{
 											fontSize: '0.75rem', padding: '2px 10px', borderRadius: '12px',
 											background: badge.bg, color: badge.color, fontWeight: 700,

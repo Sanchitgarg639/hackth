@@ -91,7 +91,7 @@ h1, h2, h3, h4, h5, h6 {
   background: var(--bg-surface);
   border: 1px solid var(--border-default);
   border-radius: var(--radius-md);
-  padding: 32px; /* Increased from 24px */
+  padding: 24px;
   box-shadow: var(--shadow-md);
   transition: var(--transition);
 }
@@ -231,7 +231,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .page-header {
-  margin-bottom: 32px;
+  margin-bottom: 24px;
 }
 
 .page-header h2 {

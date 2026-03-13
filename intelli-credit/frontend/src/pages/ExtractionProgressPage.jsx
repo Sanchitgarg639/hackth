@@ -116,7 +116,7 @@ export default function ExtractionProgressPage() {
 	return (
 		<div className="fade-in">
 			<div className="page-header">
-				<h2>⚙️ Extraction Progress</h2>
+				<h2>Extraction Progress</h2>
 				<p>AI is extracting data from your documents based on the confirmed schemas</p>
 			</div>
 
@@ -136,8 +136,8 @@ export default function ExtractionProgressPage() {
 					<div key={doc.slotKey} className="enterprise-card" style={{ marginBottom: '20px', opacity: approved ? 0.8 : 1 }}>
 						<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
 							<h3 style={{ margin: 0, fontSize: '1rem' }}>
-								📄 {doc.filename}
-								{approved && <span style={{ marginLeft: '8px', color: 'var(--success)' }}>✅ Approved</span>}
+								{doc.filename}
+								{approved && <span style={{ marginLeft: '8px', color: 'var(--success)', fontWeight: 600, fontSize: '0.85rem' }}>Approved</span>}
 							</h3>
 							<span style={{ fontSize: '0.85rem', fontWeight: 600, color: progress === 100 ? 'var(--success)' : 'var(--brand-primary)' }}>
 								{progress}%
@@ -218,7 +218,7 @@ export default function ExtractionProgressPage() {
 						{!approved && progress === 100 && (
 							<button className="btn btn-primary" style={{ marginTop: '12px' }}
 								onClick={() => handleApprove(doc.slotKey)}>
-								✅ Approve Extraction
+								Approve Extraction
 							</button>
 						)}
 					</div>
@@ -230,7 +230,7 @@ export default function ExtractionProgressPage() {
 				<button className="btn btn-primary" onClick={handleProceed}
 					disabled={!allApproved() && loading}
 					style={{ fontSize: '1rem', padding: '14px 28px' }}>
-					🚀 Proceed to Analysis
+					Proceed to Analysis
 				</button>
 			</div>
 		</div>

@@ -17,7 +17,7 @@ export default function ReasoningAccordion({ reasoningBreakdown, verdict }) {
 
 	return (
 		<div className="enterprise-card" style={{ marginBottom: '24px' }}>
-			<h3 style={{ margin: '0 0 16px', fontSize: '1.1rem' }}>🧠 Reasoning Engine Breakdown</h3>
+			<h3 style={{ margin: '0 0 16px', fontSize: '1.1rem' }}>Reasoning Engine Breakdown</h3>
 
 			<div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
 				{factors.map((f, i) => {
@@ -116,7 +116,7 @@ export default function ReasoningAccordion({ reasoningBreakdown, verdict }) {
 					border: `1px solid ${verdict.decision === 'APPROVE' ? 'var(--success)' : verdict.decision === 'REJECT' ? 'var(--danger)' : 'var(--warning)'}`,
 				}}>
 					<div style={{ fontWeight: 700, marginBottom: '6px', fontSize: '1rem' }}>
-						🏆 Final Verdict: {verdict.decision}
+						Final Verdict: {verdict.decision}
 					</div>
 					{verdict.summary && <div style={{ fontSize: '0.85rem' }}>{verdict.summary}</div>}
 					{verdict.top_factors_for && (
